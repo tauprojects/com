@@ -49,6 +49,7 @@ UsersDB UsersDBCreate(const char* filename){
 			isValidLine= removeSpaces(username) && removeSpaces(password);
 		}
 		if(!isValidLine){  //checking line
+			fclose(fp);
 			return NULL;
 		}
 		users->usersList[users->size]->user=username;
@@ -56,6 +57,7 @@ UsersDB UsersDBCreate(const char* filename){
 		users->size++;
 		lineNum++;
 	}
+	fclose(fp);
 	return users;
 }
 
