@@ -7,7 +7,7 @@
 
 
 #include "MailDB.h"
-#include <stdlib.h>ß
+#include <stdlib.h>
 
 
 struct mail_data{
@@ -16,6 +16,7 @@ struct mail_data{
 	int totalTo;
 	char subject[100];
 	char content[2000];
+	bool isTrash;
 };
 
 

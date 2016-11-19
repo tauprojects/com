@@ -17,7 +17,6 @@ struct users_db {
 struct user_mail{
 	int id;
 	DATA data;
-	bool isTrash;
 };
 
 UsersDB UsersDBCreate(const char* filename){
@@ -100,6 +99,19 @@ bool isUserExists(UsersDB users,char* username){
 		}
 	}
 	return false;
+}
+
+USER getUser(UsersDB users,char* username){
+	int size=users->size;
+	if(username == NULL || users ==NULL){
+		return NULL;
+	}
+	for(int i=0;i<size;i++){
+		if(strcmp(users->usersList[i]->user,username)==0){
+			return users->usersList[i];
+		}
+	}
+	return NULL;
 }
 
 char* getUserPassword(UsersDB users,char* username){

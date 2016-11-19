@@ -30,6 +30,8 @@ bool isUserExists(UsersDB users,char* username);
 
 char* getUserPassword(UsersDB users,char* username);
 
+USER getUser(UsersDB users,char* username);
+
 
 
 
