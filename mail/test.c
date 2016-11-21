@@ -39,15 +39,14 @@ struct total_mails{
 	int size;
 };
 
-typedef struct user_mail* MAIL_PER_USER;
-struct user_mail{
+ struct user_mail{
 	int id;
 	MAIL data;
 };
 struct user_struct {
-	char* user;
-	char* pass;
-	MAIL_PER_USER* mail;
+	char user[100];
+	char pass[100];
+//	MAIL_PER_USER* mail;
 	int mailsize;
 };
 struct users_db {
@@ -56,18 +55,23 @@ struct users_db {
 };
 int removeSpaces(char* source);
 void prinUsersDb(UsersDB users);
-UsersDB UsersDBCreate(const char* filename);
+UsersDB UsersDBCreate(const char* filename, UsersDB users);
 
 int main(){
 	const char* filename = "./users.txt";
-	UsersDB users = UsersDBCreate(filename);
+	UsersDB users =  (UsersDB)malloc(sizeof(UsersDB));
+	users->usersList = (USER*)malloc(sizeof(users->usersList)*10);
+	for(int i=0;i<10;i++){
+		strcat(users->usersList[i]->user,"aaa");
+//		users->usersList[i]->pass = (char*)malloc(sizeof(char)*100);
+
+	}
+	UsersDBCreate(filename,users);
 	prinUsersDb(users);
 
 }
 
-UsersDB UsersDBCreate(const char* filename){
-	UsersDB users = (UsersDB)malloc(sizeof(users));
-	users->usersList = (USER*)malloc(sizeof(USER)*1024);
+UsersDB UsersDBCreate(const char* filename, UsersDB users){
 	users->size=0;
 	if(filename==NULL){return NULL;}  //checking valid file name
 	FILE* fp = fopen(filename, "r");
@@ -75,17 +79,15 @@ UsersDB UsersDBCreate(const char* filename){
 
 	//temporary variables
 	int lineNum=0;
-	char* username = (char*)malloc(sizeof(char)*100);
-	char* password =  (char*)malloc(sizeof(char)*100);
+
 	char tempLine[1024];
 	char* temp;
 	bool isValidLine=true;
 	while (fgets(tempLine,1024, fp) != NULL) {
+		char* username = (char*)malloc(sizeof(char)*100);
+		char* password =  (char*)malloc(sizeof(char)*100);
 		tempLine[strlen(tempLine)-1]='\0';
-		printf("\nLine: %s",tempLine);
-
 		temp = strchr(tempLine, '\t');
-		printf("\nuser: %s",temp);
 		if(temp==NULL){ isValidLine=false;}
 		else{
 			*temp='\0';
@@ -93,15 +95,21 @@ UsersDB UsersDBCreate(const char* filename){
 			strcpy(password,temp+1);
 			isValidLine= removeSpaces(username) && removeSpaces(password);
 		}
-//		if(!isValidLine){  //checking line
-//			fclose(fp);
-//			return NULL;
-//		}
-//		users->usersList[users->size]->user=username;
-//		users->usersList[users->size]->pass=password;
+		if(!isValidLine){  //checking line
+			fclose(fp);
+			return NULL;
+		}
+//		users->usersList[users->size]->user = (char*)malloc(sizeof(char)*2);
+		printf("\nUsername: %s",username);
+		printf("\nPassword: %s",password);
+
+//		users->usersList[users->size]->user=(char*)malloc(sizeof(char)*2);
+//		strncpy(users->usersList[users->size]->user,username,strlen(username));
+//		strcat(users->usersList[users->size]->pass,password);
 //		users->size++;
-//		lineNum++;
+		lineNum++;
 	}
+	printf("\nLines number: %d ",users->size);
 //	fclose(fp);
 	return users;
 }
@@ -109,7 +117,7 @@ UsersDB UsersDBCreate(const char* filename){
 
 void prinUsersDb(UsersDB users){
 	int size = users->size;
-	printf("Total Users is: %d\n",size);
+	printf("\nTotal Users is: %d\n",size);
 	for(int i=0;i<size;i++){
 		printf("Username: %s, Password: %s" ,users->usersList[i]->user ,users->usersList[i]->pass);
 	}
@@ -124,5 +132,5 @@ int removeSpaces(char* source){
       i++;
   }
   *i = 0;
-  return 0;
+  return 1;
 }
