@@ -71,7 +71,7 @@ struct total_mails{
  *
  */
 UsersDB UsersDBCreate(const char* filename);
-
+void prinUsersDb(UsersDB users);
 bool isUserExists(UsersDB users,char* username);
 
 char* getUserPassword(UsersDB users,char* username);
