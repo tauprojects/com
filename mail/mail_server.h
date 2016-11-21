@@ -10,6 +10,41 @@
 
 #include "UsersDB.h"
 
+#include <stdbool.h>
+
+
+int parseMail(char* unparseMail ,char* from, MAIL mail);
+void printMail(MAIL mail);
+//void removeSpaces(char* source);
+/**
+ * Authenticate user connection
+ *
+ * @params client_message - full message recived from client
+ * 			username  - pointer to username value to be fill in.
+ * @return - boolean value. True if user authenticated, False otherwise.
+ *
+ */
+bool auth_user(char* client_message, char* username);
+
+/**
+ * Convert String Message to DATA object
+ *
+ * @params string
+ * @return - DATA Struct
+ *
+ */
+MAIL strToMail(char* data);
+
+/**
+ * Convert String Message to DATA object
+ *
+ * @params string
+ * @return - DATA Struct
+ *
+ */
+MAIL createUser(char* user);
+
+
 /**
  * Show the mail on inbox for user
  *
@@ -26,7 +61,7 @@ char* show_inbox(USER user);
  * @return - a one mail in the user's inbox
  *
  */
-char* show_mail(MAIL mail);
+char* show_mail(MAIL_PER_USER mail);
 
 /**
  * Show mail info in inbox of user
@@ -35,7 +70,7 @@ char* show_mail(MAIL mail);
  * @return - a mail info of specific id on user's inbox
  *
  */
-char* get_mail(int id);
+char* get_mail(USER user,int id);
 
 /**
  * Delete mail from the server
@@ -53,6 +88,7 @@ int delete_mail(USER user,int id);
  * @return - 0 on success, -1 if mail server is full, -2 if number of recipient > 20
  *
  */
-int compose(char* from,char* to,char* subject,char* content);
+int compose(TOTAL_MAILS mailsDB,UsersDB users, MAIL mail);
 
+char** str_split(char* a_str, const char a_delim,int* countStr);
 #endif /* MAIL_SERVER_H_ */

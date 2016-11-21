@@ -1,24 +1,7 @@
 #include "UsersDB.h"
 #include <assert.h>
 
-struct user_struct {
-	char user[MAXLEN];
-	char pass[MAXLEN];
-	MAIL mail[MAXMAILS];
-	int mailsize;
-};
-
-
-struct users_db {
-	USER usersList[20];
-	int size;
-};
-
-struct user_mail{
-	int id;
-	DATA data;
-};
-
+//Fix for cahr* instead char[]
 UsersDB UsersDBCreate(const char* filename){
 	UsersDB users;
 	users->size=0;
@@ -28,12 +11,12 @@ UsersDB UsersDBCreate(const char* filename){
 
 	//temporary variables
 	int lineNum=0;
-	char username[MAXLEN];
-	char password[MAXLEN];
-	char tempLine[MAXLEN];
+	char username[MAX_USERNAME];
+	char password[MAX_PASSWORD];
+	char tempLine[MAX_TEMP];
 	char* temp;
 	bool isValidLine=true;
-	while (fgets(tempLine,MAXLEN, fp) != NULL) {
+	while (fgets(tempLine,MAX_TEMP, fp) != NULL) {
 		if(isCommentLine(tempLine)){
 			lineNum++;
 			continue;
