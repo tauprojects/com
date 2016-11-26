@@ -6,12 +6,12 @@
 #include "UsersDB.h"
 
 
-char* show_inbox(USER user) {
+int showInbox(USER user,char* totalInbox) {
 	int userSizeMail = user->mailsize;
 	int showMailSize = MAX_SUBJECT + MAX_USERNAME + TEMP_ID;
 	int totalResSize = userSizeMail * showMailSize;
 	int flagFirst = 1;
-	char* totalInbox = (char*)malloc(sizeof(char)*totalResSize);
+	//char* totalInbox = (char*)malloc(sizeof(char)*totalResSize);
 	char* mail = (char*)malloc(sizeof(char)*showMailSize);
 	for (int i = 0; i < userSizeMail; i++) {
 		mail = show_mail(user->mail[i]);
@@ -27,68 +27,71 @@ char* show_inbox(USER user) {
 	}
 	free(mail);
 	if (flagFirst == 1) {
-		return NULL;
+		return -1;
 	}
-	return totalInbox;
+	return 0;
 }
 
-char* show_mail(MAIL_PER_USER mail) {
+char* showMail(MAIL mail, int id) {
 	int showMailSize = MAX_SUBJECT + MAX_USERNAME + TEMP_ID;
-	if (mail->data->isTrash) {
+	if (mail->isTrash) {
 		return NULL;
 	}
 	char* resMail = (char*)malloc(sizeof(char)*showMailSize);
-	sprintf(resMail, "%d", mail->id);
-//	strcpy(resMail, mail->id);
+//	sprintf(resMail, "%d", id);
+	strcpy(resMail, id);
 	strcat(resMail, " ");
-	strcat(resMail, mail->data->from);
+	strcat(resMail, mail->from);
 	strcat(resMail, " ");
-	strcat(resMail, mail->data->subject);
+	strcat(resMail, mail->subject);
 	strcat(resMail, "\n");
 	return resMail;
 }
 
-char* show_to(MAIL_PER_USER mail) {
+char* show_to(MAIL mail) {
 	char* showTo = (char*)malloc(sizeof(char)*TOTAL_TO*100);
-	for (int i = 0; i < mail->data->totalTo; i++) {
+	for (int i = 0; i < mail->totalTo; i++) {
 		if (i == 0)
-			strcpy(showTo, mail->data->to[i]);
+			strcpy(showTo, mail->to[i]);
 		else
-			strcat(showTo, mail->data->to[i]);
-		if (i != mail->data->totalTo - 1)
+			strcat(showTo, mail->to[i]);
+		if (i != mail->totalTo - 1)
 			strcat(showTo, ",");
 	}
 	return showTo;
 }
 
-char* get_mail(USER user, int id) {
+int getMail(USER user, int id,char* stringMail) {
 	int totalMailSize =MAX_SUBJECT + MAX_USERNAME + MAX_CONTENT + TOTAL_TO*MAX_USERNAME;
-	if (user->mailsize <= id) {
-		return NULL;
-	}
-	MAIL_PER_USER mail = user->mail[id];
-	if (mail->data->isTrash) {
-		return NULL;
-	}
-	char* stringMail = (char*)malloc(sizeof(totalMailSize));
-	strcpy(stringMail, "From:");
-	strcat(stringMail, mail->data->from);
-	strcat(stringMail, "\nTo: ");
-	strcat(stringMail, show_to(mail));
-	strcat(stringMail, "\nSubject: ");
-	strcat(stringMail, mail->data->subject);
-	strcat(stringMail, "\nText: ");
-	strcat(stringMail, mail->data->content);
-	strcat(stringMail, "\n");
-	return stringMail;
-}
-
-int delete_mail(USER user, int id) {
 	if (user->mailsize <= id) {
 		return -1;
 	}
-	MAIL_PER_USER mail = user->mail[id];
-	mail->data->isTrash = true;
+	MAIL mail = user->mail[id];
+	if (mail->isTrash) {
+		return -2;
+	}
+	if(stringMail == NULL){
+		return -3;
+	}
+//	char* stringMail = (char*)malloc(sizeof(totalMailSize));
+	strcpy(stringMail, "From:");
+	strcat(stringMail, mail->from);
+	strcat(stringMail, "\nTo: ");
+	strcat(stringMail, show_to(mail));
+	strcat(stringMail, "\nSubject: ");
+	strcat(stringMail, mail->subject);
+	strcat(stringMail, "\nText: ");
+	strcat(stringMail, mail->content);
+	strcat(stringMail, "\n");
+	return 0;
+}
+
+int deleteMail(USER user, int id) {
+	if (user->mailsize <= id) {
+		return -1;
+	}
+	MAIL mail = user->mail[id];
+	mail->isTrash = true;
 	return 0;
 }
 
@@ -137,7 +140,7 @@ char** str_split(char* a_str, const char a_delim,int* countStr) {
 	return result;
 }
 
-int compose(TOTAL_MAILS mailsDB,UsersDB users, MAIL mail) {
+int compose(TOTAL_MAILS mailsDB,USER* users,int size, MAIL mail) {
 	if (mailsDB->size >= MAXMAILS) {
 		return -1;
 	}
@@ -149,12 +152,10 @@ int compose(TOTAL_MAILS mailsDB,UsersDB users, MAIL mail) {
 	mailsDB->size++;
 
 	for(int i=0;i<mail->totalTo;i++){
-		int size=users->size;
 		for(int i=0;i<size;i++){
-			if(strcmp(users->usersList[i]->user,mailsDB->mails[newMailServerID]->to[i])==0){
-				users->usersList[i]->mail[users->usersList[i]->mailsize]->data = mailsDB->mails[newMailServerID];
-				users->usersList[i]->mail[users->usersList[i]->mailsize]->id=users->usersList[i]->mailsize;
-				users->usersList[i]->mailsize++;
+			if(strcmp(users[i]->user,mailsDB->mails[newMailServerID]->to[i])==0){
+				users[i]->mail[users[i]->mailsize] = mailsDB->mails[newMailServerID];
+				users[i]->mailsize++;
 			}
 		}
 	}

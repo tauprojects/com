@@ -36,23 +36,12 @@ bool auth_user(char* client_message, char* username);
 MAIL strToMail(char* data);
 
 /**
- * Convert String Message to DATA object
+ * Show the mails on inbox for user
  *
- * @params string
- * @return - DATA Struct
- *
+ * @params user,pointer to return message
+ * @return - int - 0 for success, -1 for wrong ID, -2 if isTrash, -3 Internal Server Error
  */
-MAIL createUser(char* user);
-
-
-/**
- * Show the mail on inbox for user
- *
- * @params user
- * @return - a list of mails in the user's inbox
- *
- */
-char* show_inbox(USER user);
+int showInbox(USER user,char* msg);
 
 /**
  * Show one mail on inbox for user
@@ -61,16 +50,16 @@ char* show_inbox(USER user);
  * @return - a one mail in the user's inbox
  *
  */
-char* show_mail(MAIL_PER_USER mail);
+char* show_mail(MAIL mail, int id);
 
 /**
- * Show mail info in inbox of user
+ * Show Specific mail by ID number
  *
- * @params user, id - mail id in user's inbox
- * @return - a mail info of specific id on user's inbox
+ * @params user, id - mail id in user's inbox, pointer to return message
+ * @return - int - 0 for success, -1 for wrong ID, -2 if isTrash, -3 Internal Server Error
  *
  */
-char* get_mail(USER user,int id);
+int getMail(USER user,int id, char* msg);
 
 /**
  * Delete mail from the server
@@ -79,7 +68,7 @@ char* get_mail(USER user,int id);
  * @return - 0 on success, -1 if there is no such id
  *
  */
-int delete_mail(USER user,int id);
+int deleteMail(USER user,int id);
 
 /**
  * compose mail in the server

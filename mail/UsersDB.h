@@ -36,15 +36,15 @@ typedef struct mail_data* MAIL;
 typedef struct total_mails* TOTAL_MAILS;
 
 
-struct user_mail{
-	int id;
-	MAIL data;
-};
+//struct user_mail{
+//	int id;
+//	MAIL data;
+//};
 
 struct user_struct {
 	char* user;
 	char* pass;
-	MAIL_PER_USER* mail;
+	MAIL* mail[MAXMAILS];
 	int mailsize;
 };
 
