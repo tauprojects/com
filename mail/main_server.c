@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
 	int totalMailSize =MAX_SUBJECT + MAX_CONTENT + TOTAL_TO*MAX_USERNAME;
 	char client_message[totalMailSize];
 	char* username = (char*) malloc(sizeof(char) * MAX_USERNAME);
-	char* message;(char*) malloc(sizeof(char) * 2000);
+	char* message =(char*) malloc(sizeof(char) * 2000);
 	USER user;
 	USER *users=(USER*)malloc(sizeof(USER)*NUM_OF_CLIENTS);
 
