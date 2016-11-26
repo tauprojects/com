@@ -91,17 +91,17 @@ char** str_split(char* a_str, const char a_delim)
     return result;
 }
 
-void check_quit(char* msg){
-	if (strncmp(msg, QUIT_MSG, strlen(QUIT_MSG))==0){
-		send_data("5");
+void send_data(char* msg){
+	if (send(sock, msg, strlen(msg), 0) < 0) {
+		printf("Failed to send to server: %s\n", strerror(errno));
 		exit(EXIT_FAILURE);
 		close(sock);
 	}
 }
 
-void send_data(char* msg){
-	if (send(sock, msg, strlen(msg), 0) < 0) {
-		printf("Failed to send to server: %s\n", strerror(errno));
+void check_quit(char* msg){
+	if (strncmp(msg, QUIT_MSG, strlen(QUIT_MSG))==0){
+		send_data("5");
 		exit(EXIT_FAILURE);
 		close(sock);
 	}
@@ -160,7 +160,7 @@ void get_cmd_and_execute(char *message, char *temp, char ** splitArgs, char* ser
 		check_quit(message);
 		splitArgs=str_split(message,' ');
 		if(strncmp(splitArgs[0], SHOW, strlen(SHOW))==0){
-			send_data('1');
+			send_data("1");
 			recv_data(server_reply);
 			printf("%s\n", server_reply);
 		}

@@ -44,7 +44,7 @@ typedef struct total_mails* TOTAL_MAILS;
 struct user_struct {
 	char* user;
 	char* pass;
-	MAIL* mail[MAXMAILS];
+	MAIL mail[MAXMAILS];
 	int mailsize;
 };
 

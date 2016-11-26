@@ -50,7 +50,7 @@ int showInbox(USER user,char* msg);
  * @return - a one mail in the user's inbox
  *
  */
-char* show_mail(MAIL mail, int id);
+int showMail(MAIL mail, int id,char *resMail);
 
 /**
  * Show Specific mail by ID number
@@ -77,7 +77,7 @@ int deleteMail(USER user,int id);
  * @return - 0 on success, -1 if mail server is full, -2 if number of recipient > 20
  *
  */
-int compose(TOTAL_MAILS mailsDB,UsersDB users, MAIL mail);
+int compose(TOTAL_MAILS mailsDB,USER* users,int size, MAIL mail);
 
 char** str_split(char* a_str, const char a_delim,int* countStr);
 #endif /* MAIL_SERVER_H_ */

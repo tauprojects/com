@@ -14,7 +14,7 @@ int showInbox(USER user,char* totalInbox) {
 	//char* totalInbox = (char*)malloc(sizeof(char)*totalResSize);
 	char* mail = (char*)malloc(sizeof(char)*showMailSize);
 	for (int i = 0; i < userSizeMail; i++) {
-		mail = show_mail(user->mail[i]);
+		showMail(user->mail[i],i,mail);
 		if (mail == NULL) {
 			continue;
 		}
@@ -32,20 +32,20 @@ int showInbox(USER user,char* totalInbox) {
 	return 0;
 }
 
-char* showMail(MAIL mail, int id) {
+int showMail(MAIL mail, int id,char *resMail) {
 	int showMailSize = MAX_SUBJECT + MAX_USERNAME + TEMP_ID;
 	if (mail->isTrash) {
-		return NULL;
+		return -1;
 	}
-	char* resMail = (char*)malloc(sizeof(char)*showMailSize);
-//	sprintf(resMail, "%d", id);
-	strcpy(resMail, id);
+//	char* resMail = (char*)malloc(sizeof(char)*showMailSize);
+	sprintf(resMail, "%d", id);
+//  strcpy(resMail, id);
 	strcat(resMail, " ");
 	strcat(resMail, mail->from);
 	strcat(resMail, " ");
 	strcat(resMail, mail->subject);
 	strcat(resMail, "\n");
-	return resMail;
+	return 0;
 }
 
 char* show_to(MAIL mail) {
