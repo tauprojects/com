@@ -9,6 +9,7 @@
 #define MAX_PASSWORD 100
 #define MAX_SUBJECT 100
 #define MAX_CONTENT 2000
+#define NUM_OF_CLIENTS 20
 #define MAX_TEMP 1024
 #define TEMP_ID 6;
 typedef enum USER_COMMAND {
@@ -43,50 +44,51 @@ struct total_mails{
 	int id;
 	MAIL data;
 };
-struct user_struct {
-	char user[100];
-	char pass[100];
-//	MAIL_PER_USER* mail;
-	int mailsize;
-};
+ struct user_struct {
+ 	char* user;
+ 	char* pass;
+ 	MAIL_PER_USER* mail;
+ 	int mailsize;
+ };
 struct users_db {
-	USER* usersList;
+	USER usersList[NUM_OF_CLIENTS];
 	int size;
 };
 int removeSpaces(char* source);
-void prinUsersDb(UsersDB users);
-UsersDB UsersDBCreate(const char* filename, UsersDB users);
+void prinUsersDb(USER* users,int size);
+int UsersDBCreate(const char* filename, USER* users);
 
 int main(){
 	const char* filename = "./users.txt";
-	UsersDB users =  (UsersDB)malloc(sizeof(UsersDB));
-	users->usersList = (USER*)malloc(sizeof(users->usersList)*10);
-	for(int i=0;i<10;i++){
-		strcat(users->usersList[i]->user,"aaa");
-//		users->usersList[i]->pass = (char*)malloc(sizeof(char)*100);
-
-	}
-	UsersDBCreate(filename,users);
-	prinUsersDb(users);
+	USER *users=(USER*)malloc(sizeof(USER)*NUM_OF_CLIENTS);
+	int size;
+	size = UsersDBCreate(filename,users);
+	prinUsersDb(users,size);
 
 }
 
-UsersDB UsersDBCreate(const char* filename, UsersDB users){
-	users->size=0;
-	if(filename==NULL){return NULL;}  //checking valid file name
-	FILE* fp = fopen(filename, "r");
-	if (fp == NULL) {return NULL;}    //checking file
+USER createUser(char* user,char* pass);
 
+int UsersDBCreate(const char* filename, USER* users){
+	int size =0;
+	if(filename==NULL){return -1;}  //checking valid file name
+	FILE* fp = fopen(filename, "r");
+	if (fp == NULL) {return -1;}    //checking file
 	//temporary variables
 	int lineNum=0;
-
 	char tempLine[1024];
 	char* temp;
 	bool isValidLine=true;
-	while (fgets(tempLine,1024, fp) != NULL) {
-		char* username = (char*)malloc(sizeof(char)*100);
-		char* password =  (char*)malloc(sizeof(char)*100);
-		tempLine[strlen(tempLine)-1]='\0';
+	USER ustemp;
+	char* username = (char*)malloc(sizeof(char)*MAX_USERNAME);
+	char* password =  (char*)malloc(sizeof(char)*MAX_PASSWORD);
+	while (fgets(tempLine,1024, fp) != NULL ) {
+		if(tempLine[strlen(tempLine)-1]=='\n'){
+			tempLine[strlen(tempLine)-1]='\0';
+		}
+		else{
+			tempLine[strlen(tempLine)]='\0';
+		}
 		temp = strchr(tempLine, '\t');
 		if(temp==NULL){ isValidLine=false;}
 		else{
@@ -97,30 +99,37 @@ UsersDB UsersDBCreate(const char* filename, UsersDB users){
 		}
 		if(!isValidLine){  //checking line
 			fclose(fp);
-			return NULL;
+			return -1;
 		}
-//		users->usersList[users->size]->user = (char*)malloc(sizeof(char)*2);
-		printf("\nUsername: %s",username);
-		printf("\nPassword: %s",password);
-
-//		users->usersList[users->size]->user=(char*)malloc(sizeof(char)*2);
-//		strncpy(users->usersList[users->size]->user,username,strlen(username));
-//		strcat(users->usersList[users->size]->pass,password);
-//		users->size++;
+		users[size]=createUser(username,password);
+		printf("\nUsername: %s",users[size]->user);
+		printf("\nPassword: %s",users[size]->pass);
+		size++;
 		lineNum++;
 	}
-	printf("\nLines number: %d ",users->size);
-//	fclose(fp);
-	return users;
+	printf("\nLines number: %d ",size);
+	free(username);
+	free(password);
+	return size;
 }
 
 
-void prinUsersDb(UsersDB users){
-	int size = users->size;
+void prinUsersDb(USER* users,int size){
 	printf("\nTotal Users is: %d\n",size);
 	for(int i=0;i<size;i++){
-		printf("Username: %s, Password: %s" ,users->usersList[i]->user ,users->usersList[i]->pass);
+		printf("Username: %s, Password: %s" ,users[i]->user ,users[i]->pass);
 	}
+}
+
+
+USER createUser(char* user,char* pass){
+	USER u=(USER)malloc(sizeof(USER));
+	u->mailsize=0;
+	u->user=(char*)malloc(sizeof(char)*MAX_USERNAME);
+	u->pass =  (char*)malloc(sizeof(char)*MAX_PASSWORD);
+	strncpy(u->user,user,strlen(user));
+	strncpy(u->pass,pass,strlen(pass));
+	return u;
 }
 
 int removeSpaces(char* source){

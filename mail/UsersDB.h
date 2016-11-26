@@ -21,6 +21,7 @@
 #define MAX_PASSWORD 100
 #define MAX_SUBJECT 100
 #define MAX_CONTENT 2000
+#define NUM_OF_CLIENTS 20
 #define MAX_TEMP 1024
 #define TEMP_ID 6;
 /**
@@ -47,11 +48,6 @@ struct user_struct {
 	int mailsize;
 };
 
-struct users_db {
-	USER* usersList;
-	int size;
-};
-
 struct mail_data{
 	char* from;  //check name size
 	char** to; //check name size
@@ -70,7 +66,10 @@ struct total_mails{
  *
  *
  */
-UsersDB UsersDBCreate(const char* filename);
+int UsersDBCreate(const char* filename, USER* users);
+
+USER createUser(char* user,char* pass);
+
 void prinUsersDb(UsersDB users);
 bool isUserExists(UsersDB users,char* username);
 

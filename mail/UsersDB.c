@@ -2,22 +2,26 @@
 #include <assert.h>
 
 //Fix for cahr* instead char[]
-UsersDB UsersDBCreate(const char* filename){
-	UsersDB users;
-	users->size=0;
-	if(filename==NULL){return NULL;}  //checking valid file name
+int UsersDBCreate(const char* filename, USER* users){
+	int size =0;
+	if(filename==NULL){return -1;}  //checking valid file name
 	FILE* fp = fopen(filename, "r");
-	if (fp == NULL) {return NULL;}    //checking file
-
+	if (fp == NULL) {return -1;}    //checking file
 	//temporary variables
 	int lineNum=0;
-	char* username = (char*)malloc(sizeof(char)*MAX_USERNAME);
-	char* password =  (char*)malloc(sizeof(char)*MAX_PASSWORD);
-	char tempLine[MAX_TEMP];
+	char tempLine[1024];
 	char* temp;
 	bool isValidLine=true;
-	while (fgets(tempLine,MAX_TEMP, fp) != NULL) {
-		tempLine[strlen(tempLine)-1]='\0';
+	USER ustemp;
+	char* username = (char*)malloc(sizeof(char)*MAX_USERNAME);
+	char* password =  (char*)malloc(sizeof(char)*MAX_PASSWORD);
+	while (fgets(tempLine,1024, fp) != NULL ) {
+		if(tempLine[strlen(tempLine)-1]=='\n'){
+			tempLine[strlen(tempLine)-1]='\0';
+		}
+		else{
+			tempLine[strlen(tempLine)]='\0';
+		}
 		temp = strchr(tempLine, '\t');
 		if(temp==NULL){ isValidLine=false;}
 		else{
@@ -28,15 +32,29 @@ UsersDB UsersDBCreate(const char* filename){
 		}
 		if(!isValidLine){  //checking line
 			fclose(fp);
-			return NULL;
+			return -1;
 		}
-		users->usersList[users->size]->user=username;
-		users->usersList[users->size]->pass=password;
-		users->size++;
+		users[size]=createUser(username,password);
+		printf("\nUsername: %s",users[size]->user);
+		printf("\nPassword: %s",users[size]->pass);
+		size++;
 		lineNum++;
 	}
+	printf("\nLines number: %d ",size);
+	free(username);
+	free(password);
 	fclose(fp);
-	return users;
+	return size;
+}
+
+USER createUser(char* user,char* pass){
+	USER u=(USER)malloc(sizeof(USER));
+	u->mailsize=0;
+	u->user=(char*)malloc(sizeof(char)*MAX_USERNAME);
+	u->pass =  (char*)malloc(sizeof(char)*MAX_PASSWORD);
+	strncpy(u->user,user,strlen(user));
+	strncpy(u->pass,pass,strlen(pass));
+	return u;
 }
 
 bool removeSpaces(char* source){
