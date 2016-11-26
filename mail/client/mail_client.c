@@ -46,7 +46,6 @@
 int sock;
 
 
-
 char** str_split(char* a_str, const char a_delim)
 {
     char** result    = 0;
@@ -93,6 +92,7 @@ char** str_split(char* a_str, const char a_delim)
 
 void check_quit(char* msg){
 	if (strncmp(msg, QUIT_MSG, strlen(QUIT_MSG))==0){
+		send_data("5");
 		exit(EXIT_FAILURE);
 		close(sock);
 	}
@@ -138,7 +138,7 @@ void enter_auth(char* message, char* user, char* password, char** splitArgs, cha
 		}
 		else{
 			strcpy(password, splitArgs[1]);
-			sprintf(auth, "%s    %s", user, password);
+			sprintf(auth, "0%s    %s    ", user, password);
 			send_data(auth);
 			recv_data(server_reply);
 			if(strncmp(SUC_AUTH, server_reply, strlen(SUC_AUTH))==0){
@@ -159,16 +159,18 @@ void get_cmd_and_execute(char *message, char *temp, char ** splitArgs, char* ser
 		check_quit(message);
 		splitArgs=str_split(message,' ');
 		if(strncmp(splitArgs[0], SHOW, strlen(SHOW))==0){
-			send_data(SHOW);
+			send_data('1');
 			recv_data(server_reply);
-			printf("%s", server_reply);
+			printf("%s\n", server_reply);
 		}
 		else if(strncmp(splitArgs[0], GET, strlen(GET))==0){
+			sprintf(temp, "2%s    ", splitArgs[1]);
 			send_data(temp);
 			recv_data(server_reply);
 			printf("%s",server_reply);
 		}
 		else if(strncmp(splitArgs[0], DEL, strlen(DEL))==0){
+			sprintf(temp, "3%s    ", splitArgs[1]);
 			send_data(temp);
 		}
 		else if(strncmp(splitArgs[0], COMP, strlen(COMP))==0){
@@ -207,7 +209,7 @@ void get_cmd_and_execute(char *message, char *temp, char ** splitArgs, char* ser
 					}
 				}
 			}
-			sprintf(comp_txt, "%s%s%s%s",COMP, send_list, subject, text);
+			sprintf(comp_txt, "4%s%s%s",COMP, send_list, subject, text);
 //				puts(comp_txt);
 			send_data(comp_txt);
 		}
