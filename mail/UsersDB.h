@@ -23,7 +23,7 @@
 #define MAX_CONTENT 2000
 #define NUM_OF_CLIENTS 20
 #define MAX_TEMP 1024
-#define TEMP_ID 6;
+#define TEMP_ID 6
 /**
  * A data-structure which is used for configuring the system.
  */
@@ -70,12 +70,12 @@ int UsersDBCreate(const char* filename, USER* users);
 
 USER createUser(char* user,char* pass);
 
-void prinUsersDb(UsersDB users);
-bool isUserExists(UsersDB users,char* username);
+void prinUsersDb(USER* users, int size);
+bool isUserExists(USER* users, int size,char* username);
 
-char* getUserPassword(UsersDB users,char* username);
+char* getUserPassword(USER* users, int size,char* username);
 
-USER getUser(UsersDB users,char* username);
+USER getUser(USER* users, int size,char* username);
 
 bool removeSpaces(char* source);
 bool isCommentLine(char* tempLine);

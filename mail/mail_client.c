@@ -15,11 +15,12 @@
 #include <arpa/inet.h>
 #include <assert.h>
 
+
 #define DEFAULT_PORT 6423
 #define TOTAL_MSG 4500
 #define HOST_REPLY 100
-#define AUTH_LEN 10
-#define SUBJECT 110
+#define AUTH_LEN 100
+#define SUBJECT 100
 #define TOT_TEXT 2350
 #define DEFAULT_HOST "127.0.0.1"
 #define QUIT_MSG "QUIT"
@@ -209,7 +210,7 @@ void get_cmd_and_execute(char *message, char *temp, char ** splitArgs, char* ser
 					}
 				}
 			}
-			sprintf(comp_txt, "4%s%s%s",COMP, send_list, subject, text);
+			sprintf(comp_txt, "4%s%s%s", send_list, subject, text);
 //				puts(comp_txt);
 			send_data(comp_txt);
 		}

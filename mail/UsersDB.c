@@ -78,40 +78,37 @@ bool hasSpace(char* source){
 	return true;
 }
 
-bool isUserExists(UsersDB users,char* username){
-	int size=users->size;
+bool isUserExists(USER* users, int size,char* username){
 	if(username == NULL || users ==NULL){
 		return false;
 	}
 	for(int i=0;i<size;i++){
-		if(strcmp(users->usersList[i]->user,username)==0){
+		if(strcmp(users[i]->user,username)==0){
 			return true;
 		}
 	}
 	return false;
 }
 
-USER getUser(UsersDB users,char* username){
-	int size=users->size;
+USER getUser(USER* users, int size,char* username){
 	if(username == NULL || users ==NULL){
 		return NULL;
 	}
 	for(int i=0;i<size;i++){
-		if(strcmp(users->usersList[i]->user,username)==0){
-			return users->usersList[i];
+		if(strcmp(users[i]->user,username)==0){
+			return users[i];
 		}
 	}
 	return NULL;
 }
 
-char* getUserPassword(UsersDB users,char* username){
-	int size=users->size;
+char* getUserPassword(USER* users, int size,char* username){
 	if(username == NULL || users ==NULL){
 		return NULL;
 	}
 	for(int i=0;i<size;i++){
-		if(strcmp(users->usersList[i]->user,username)==0){
-			return users->usersList[i]->pass;
+		if(strcmp(users[i]->user,username)==0){
+			return users[i]->pass;
 		}
 	}
 	return NULL;
@@ -126,10 +123,9 @@ bool isNum(char* str) {
 	return true;
 }
 
-void prinUsersDb(UsersDB users){
-	int size = users->size;
+void prinUsersDb(USER* users, int size){
 	printf("Total Users is: %d\n",size);
 	for(int i=0;i<size;i++){
-		printf("Username: %s, Password: %s" ,users->usersList[i]->user ,users->usersList[i]->pass);
+		printf("Username: %s, Password: %s" ,users[i]->user ,users[i]->pass);
 	}
 }
