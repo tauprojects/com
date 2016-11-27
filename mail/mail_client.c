@@ -173,7 +173,7 @@ void get_cmd_and_execute(char *message, char *temp, char ** splitArgs, char* ser
 			recv_data(server_reply);
 			printf("%s\n", server_reply);
 		}
-		else if(strncmp(splitArgs[0], GET, strlen(GET))==0){
+		else if(strncmp(splitArgs[0], GET, strlen(GET))==0 && splitArgs[1]){
 			size = 1+strlen(splitArgs[1]);
 			size=inttostr(size,msgSize);
 			sprintf(temp, "2%s%s", msgSize,splitArgs[1]);
@@ -181,7 +181,7 @@ void get_cmd_and_execute(char *message, char *temp, char ** splitArgs, char* ser
 			recv_data(server_reply);
 			printf("%s",server_reply);
 		}
-		else if(strncmp(splitArgs[0], DEL, strlen(DEL))==0){
+		else if(strncmp(splitArgs[0], DEL, strlen(DEL))==0 && splitArgs[1]){
 			size = 1 + strlen(splitArgs[1]);
 			size=inttostr(size,msgSize);
 			sprintf(temp, "3%s%s", msgSize,splitArgs[1]);
