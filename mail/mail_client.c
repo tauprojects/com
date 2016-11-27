@@ -18,13 +18,13 @@
 
 #define DEFAULT_PORT 6423
 #define TOTAL_MSG 4500
-#define HOST_REPLY 100
+#define HOST_REPLY 4500
 #define AUTH_LEN 100
 #define SUBJECT 100
 #define TOT_TEXT 2350
 #define DEFAULT_HOST "127.0.0.1"
 #define QUIT_MSG "QUIT"
-#define HELLO_MSG "‫!‪Welcome‬‬ ‫‪I‬‬ ‫‪am‬‬ ‫‪simple-mail-server.‬‬"
+#define HELLO_MSG "Welcome! I am simple-mail-server"
 #define AUTH_USR_ERR "Error-wrong format or too long authenticity key, the format should be: User: <10chars> try again or print \"QUIT\" to exit\n"
 #define AUTH_PWD_ERR "Error-wrong format or too long authenticity key, the format should be: Password: <10chars> try again or print \"QUIT\" to exit\n"
 #define USER_ATT "User:"
@@ -46,7 +46,7 @@
 
 int sock;
 
-
+int inttostr(int i,char* str);
 char** str_split(char* a_str, const char a_delim)
 {
     char** result    = 0;
@@ -109,14 +109,14 @@ void check_quit(char* msg){
 
 void recv_data(char* msg){
 	memset(msg,0,strlen(msg));
-	if (recv(sock, msg, 2000, 0) < 0) {
+	if (recv(sock, msg, HOST_REPLY, 0) < 0) {
 		printf("Failed to receive from server: %s\n", strerror(errno));
 		exit(EXIT_FAILURE);
 		close(sock);
 	}
 }
 
-void enter_auth(char* message, char* user, char* password, char** splitArgs, char* auth, char* server_reply){
+int enter_auth(char* message, char* user, char* password, char** splitArgs, char* auth, char* server_reply,char* temp){
 	while(1){
 		fgets(message, TOTAL_MSG, stdin);
 		check_quit(message);
@@ -139,40 +139,54 @@ void enter_auth(char* message, char* user, char* password, char** splitArgs, cha
 		}
 		else{
 			strcpy(password, splitArgs[1]);
-			sprintf(auth, "0%s    %s    ", user, password);
+			int size=2+strlen(user)+strlen(password);
+			size=inttostr(size,temp);
+			sprintf(auth, "0%s%s %s", temp,user, password);
 			send_data(auth);
+			printf("lalalala1\n");
 			recv_data(server_reply);
+			printf("lalalala2\n");
 			if(strncmp(SUC_AUTH, server_reply, strlen(SUC_AUTH))==0){
 				puts(server_reply);
-				break;
+				free(splitArgs);
+				return 1;
 			}
 			else{
 				printf("%s\n", BAD_AUTH);
+				free(splitArgs);
+				return 0;
 			}
 		}
 	}
+	free(splitArgs);
 }
 
-void get_cmd_and_execute(char *message, char *temp, char ** splitArgs, char* server_reply, char *send_list, char *subject, char *text, char* comp_txt){
+void get_cmd_and_execute(char *message, char *temp, char ** splitArgs, char* server_reply, char *send_list, char *subject, char *text, char* comp_txt,char* msgSize){
 	while(1){
 		fgets(message, TOTAL_MSG, stdin);
 		strcpy(temp, message);
 		check_quit(message);
 		splitArgs=str_split(message,' ');
+		int size;
 		if(strncmp(splitArgs[0], SHOW, strlen(SHOW))==0){
 			send_data("1");
 			recv_data(server_reply);
 			printf("%s\n", server_reply);
 		}
 		else if(strncmp(splitArgs[0], GET, strlen(GET))==0){
-			sprintf(temp, "2%s    ", splitArgs[1]);
+			size = 1+strlen(splitArgs[1]);
+			size=inttostr(size,msgSize);
+			sprintf(temp, "2%s%s", msgSize,splitArgs[1]);
 			send_data(temp);
 			recv_data(server_reply);
 			printf("%s",server_reply);
 		}
 		else if(strncmp(splitArgs[0], DEL, strlen(DEL))==0){
-			sprintf(temp, "3%s    ", splitArgs[1]);
+			size = 1 + strlen(splitArgs[1]);
+			size=inttostr(size,msgSize);
+			sprintf(temp, "3%s%s", msgSize,splitArgs[1]);
 			send_data(temp);
+			recv_data(server_reply);
 		}
 		else if(strncmp(splitArgs[0], COMP, strlen(COMP))==0){
 			int to_flag = 0, sub_flag = 0, text_flag = 0;
@@ -210,17 +224,26 @@ void get_cmd_and_execute(char *message, char *temp, char ** splitArgs, char* ser
 					}
 				}
 			}
-			sprintf(comp_txt, "4%s%s%s", send_list, subject, text);
+			size = strlen(send_list)+strlen(subject)+strlen(text);
+			sprintf(comp_txt, "4%s%s%s%s",msgSize, send_list, subject, text);
 //				puts(comp_txt);
 			send_data(comp_txt);
+			recv_data(server_reply);
 		}
 		else{
 			printf(WRNG_CMD);
 		}
 	}
+	free(splitArgs);
+}
+
+int inttostr(int i,char* str){
+	sprintf(str,"%04d",i);
+	return 0;
 }
 
 int main(int argc, char* argv[]) {
+	char msgSize[4];
 	// var declaration
 	char *hostname;
 	char user[AUTH_LEN], password[AUTH_LEN], auth[3*AUTH_LEN], send_list[21*AUTH_LEN], subject[SUBJECT], text[2010], comp_txt[TOT_TEXT];
@@ -265,110 +288,13 @@ int main(int argc, char* argv[]) {
 	puts(server_reply);
 
 	// entering user
-
-	enter_auth(message, user, password, splitArgs, auth, server_reply);
-
-//	while(1){
-//		fgets(message, TOTAL_MSG, stdin);
-//		check_quit(message);
-//		splitArgs=str_split(message,' ');
-//		if(strncmp(splitArgs[0],USER_ATT, strlen(USER_ATT))!=0 || !splitArgs[1] || strlen(splitArgs[1])>AUTH_LEN){
-//			printf("%s\n", AUTH_USR_ERR);
-//		}
-//		else{
-//			strtok(splitArgs[1], "\n");
-//			strcpy(user, splitArgs[1]);
-//			break;
-//		}
-//	}
-//	while(1){
-//		fgets(message, TOTAL_MSG, stdin);
-//		check_quit(message);
-//		splitArgs=str_split(message,' ');
-//		if(strncmp(splitArgs[0],PASS_ATT, strlen(PASS_ATT))!=0 || !splitArgs[1] ||strlen(splitArgs[1])>AUTH_LEN){
-//			printf("%s\n", AUTH_PWD_ERR);
-//		}
-//		else{
-//			strcpy(password, splitArgs[1]);
-//			sprintf(auth, "%s    %s", user, password);
-//			printf("%s", auth);
-//			send_data(auth);
-//			recv_data(server_reply);
-//			if(strncmp(SUC_AUTH, server_reply, strlen(SUC_AUTH))==0){
-//				puts(server_reply);
-//				break;
-//			}
-//			else{
-//				printf("%s\n", BAD_AUTH);
-//			}
-//		}
-//	}
+	int flag = 0;
+	while(flag == 0){
+		flag = enter_auth(message, user, password, splitArgs, auth, server_reply,msgSize);
+	}
 
 	// cmds to mail server
-	get_cmd_and_execute(message, temp, splitArgs ,server_reply ,send_list ,subject ,text ,comp_txt);
-//	while(1){
-//		fgets(message, TOTAL_MSG, stdin);
-//		strcpy(temp, message);
-//		check_quit(message);
-//		splitArgs=str_split(message,' ');
-//		if(strncmp(splitArgs[0], SHOW, strlen(SHOW))==0){
-//			send_data(SHOW);
-//			recv_data(server_reply);
-//			printf("%s", server_reply);
-//		}
-//		else if(strncmp(splitArgs[0], GET, strlen(GET))==0){
-//			send_data(temp);
-//			recv_data(server_reply);
-//			printf("%s",server_reply);
-//		}
-//		else if(strncmp(splitArgs[0], DEL, strlen(DEL))==0){
-//			send_data(temp);
-//		}
-//		else if(strncmp(splitArgs[0], COMP, strlen(COMP))==0){
-//			int to_flag = 0, sub_flag = 0, text_flag = 0;
-//			while(!(to_flag && sub_flag && text_flag)){
-//				fgets(message, TOTAL_MSG, stdin);
-//				strcpy(temp, message);
-//				check_quit(message);
-//				splitArgs=str_split(message,' ');
-//				printf("%s !!!! %s",splitArgs[0], temp);
-//				if(to_flag==0){
-//					if(strncmp(splitArgs[0],TO_ATT, strlen(TO_ATT))==0 && splitArgs[1]){
-//						to_flag = 1;
-//						strcpy(send_list, temp);
-////						strcpy(send_list,splitArgs[1]);
-//					}
-//					else{
-//						printf("%s\n", TO_ERR);
-//					}
-//				}
-//				else if(to_flag == 1 && sub_flag == 0){
-//					if(strncmp(splitArgs[0],SUB_ATT, strlen(SUB_ATT))==0 && splitArgs[1]){
-//						sub_flag = 1;
-//						strcpy(subject, temp);
-//					}
-//					else{
-//						printf("%s\n", SUB_ERR);
-//					}
-//				}
-//				else if(to_flag == 1 && sub_flag == 1){
-//					if(strncmp(splitArgs[0],TXT_ATT, strlen(TXT_ATT))==0 && splitArgs[1]){
-//						text_flag = 1;
-//						strcpy(text,temp);
-//					}
-//					else{
-//						printf("%s\n", TXT_ERR);
-//					}
-//				}
-//			}
-//			sprintf(comp_txt, "%s%s%s", send_list, subject, text);
-//			puts(comp_txt);
-//			send_data(comp_txt);
-//		}
-//		else{
-//			printf(WRNG_CMD);
-//		}
-//	}
+	get_cmd_and_execute(message, temp, splitArgs ,server_reply ,send_list ,subject ,text ,comp_txt,msgSize);
 
 	close(sock);
 	return 0;

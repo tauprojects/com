@@ -35,12 +35,12 @@ int UsersDBCreate(const char* filename, USER* users){
 			return -1;
 		}
 		users[size]=createUser(username,password);
-		printf("\nUsername: %s",users[size]->user);
-		printf("\nPassword: %s",users[size]->pass);
+//		printf("\nUsername: %s",users[size]->user);
+//		printf("\nPassword: %s",users[size]->pass);
 		size++;
 		lineNum++;
 	}
-	printf("\nLines number: %d ",size);
+//	printf("\nLines number: %d ",size);
 	free(username);
 	free(password);
 	fclose(fp);
@@ -124,8 +124,9 @@ bool isNum(char* str) {
 }
 
 void prinUsersDb(USER* users, int size){
-	printf("Total Users is: %d\n",size);
+//	printf("Total Users is: %d\n",size);
 	for(int i=0;i<size;i++){
-		printf("Username: %s, Password: %s" ,users[i]->user ,users[i]->pass);
+		fflush(NULL);
+		printf("Username: %s, Password: %s\n" ,users[i]->user ,users[i]->pass);
 	}
 }

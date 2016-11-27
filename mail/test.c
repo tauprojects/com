@@ -59,87 +59,86 @@ void prinUsersDb(USER* users,int size);
 int UsersDBCreate(const char* filename, USER* users);
 
 int main(){
-	const char* filename = "./users.txt";
-	USER *users=(USER*)malloc(sizeof(USER)*NUM_OF_CLIENTS);
-	int size;
-	size = UsersDBCreate(filename,users);
-	prinUsersDb(users,size);
+	int n =5;
+//	char* msg = (char*)calloc(sizeof(char),5);
+//	sprintf(msg,"%4d",n);
+	printf("\n%05d\n", n);
 
 }
 
 USER createUser(char* user,char* pass);
 
-int UsersDBCreate(const char* filename, USER* users){
-	int size =0;
-	if(filename==NULL){return -1;}  //checking valid file name
-	FILE* fp = fopen(filename, "r");
-	if (fp == NULL) {return -1;}    //checking file
-	//temporary variables
-	int lineNum=0;
-	char tempLine[1024];
-	char* temp;
-	bool isValidLine=true;
-	USER ustemp;
-	char* username = (char*)malloc(sizeof(char)*MAX_USERNAME);
-	char* password =  (char*)malloc(sizeof(char)*MAX_PASSWORD);
-	while (fgets(tempLine,1024, fp) != NULL ) {
-		if(tempLine[strlen(tempLine)-1]=='\n'){
-			tempLine[strlen(tempLine)-1]='\0';
-		}
-		else{
-			tempLine[strlen(tempLine)]='\0';
-		}
-		temp = strchr(tempLine, '\t');
-		if(temp==NULL){ isValidLine=false;}
-		else{
-			*temp='\0';
-			strcpy(username,tempLine);
-			strcpy(password,temp+1);
-			isValidLine= removeSpaces(username) && removeSpaces(password);
-		}
-		if(!isValidLine){  //checking line
-			fclose(fp);
-			return -1;
-		}
-		users[size]=createUser(username,password);
-		printf("\nUsername: %s",users[size]->user);
-		printf("\nPassword: %s",users[size]->pass);
-		size++;
-		lineNum++;
-	}
-	printf("\nLines number: %d ",size);
-	free(username);
-	free(password);
-	return size;
-}
+//int UsersDBCreate(const char* filename, USER* users){
+//	int size =0;
+//	if(filename==NULL){return -1;}  //checking valid file name
+//	FILE* fp = fopen(filename, "r");
+//	if (fp == NULL) {return -1;}    //checking file
+//	//temporary variables
+//	int lineNum=0;
+//	char tempLine[1024];
+//	char* temp;
+//	bool isValidLine=true;
+//	USER ustemp;
+//	char* username = (char*)malloc(sizeof(char)*MAX_USERNAME);
+//	char* password =  (char*)malloc(sizeof(char)*MAX_PASSWORD);
+//	while (fgets(tempLine,1024, fp) != NULL ) {
+//		if(tempLine[strlen(tempLine)-1]=='\n'){
+//			tempLine[strlen(tempLine)-1]='\0';
+//		}
+//		else{
+//			tempLine[strlen(tempLine)]='\0';
+//		}
+//		temp = strchr(tempLine, '\t');
+//		if(temp==NULL){ isValidLine=false;}
+//		else{
+//			*temp='\0';
+//			strcpy(username,tempLine);
+//			strcpy(password,temp+1);
+//			isValidLine= removeSpaces(username) && removeSpaces(password);
+//		}
+//		if(!isValidLine){  //checking line
+//			fclose(fp);
+//			return -1;
+//		}
+//		users[size]=createUser(username,password);
+//		printf("\nUsername: %s",users[size]->user);
+//		printf("\nPassword: %s",users[size]->pass);
+//		size++;
+//		lineNum++;
+//	}
+//	printf("\nLines number: %d ",size);
+//	free(username);
+//	free(password);
+//	return size;
+//}
 
 
-void prinUsersDb(USER* users,int size){
-	printf("\nTotal Users is: %d\n",size);
-	for(int i=0;i<size;i++){
-		printf("Username: %s, Password: %s" ,users[i]->user ,users[i]->pass);
-	}
-}
+//void prinUsersDb(USER* users,int size){
+//	printf("\nTotal Users is: %d\n",size);
+//	for(int i=0;i<size;i++){
+//		printf("Username: %s, Password: %s" ,users[i]->user ,users[i]->pass);
+//	}
+//}
 
-
-USER createUser(char* user,char* pass){
-	USER u=(USER)malloc(sizeof(USER));
-	u->mailsize=0;
-	u->user=(char*)malloc(sizeof(char)*MAX_USERNAME);
-	u->pass =  (char*)malloc(sizeof(char)*MAX_PASSWORD);
-	strncpy(u->user,user,strlen(user));
-	strncpy(u->pass,pass,strlen(pass));
-	return u;
-}
-
-int removeSpaces(char* source){
-  char* i = source;
-  char* j = source;
-  while(*j != 0){
-    *i = *j++;
-    if(*i != ' ')
-      i++;
-  }
-  *i = 0;
-  return 1;
-}
+//
+//USER createUser(char* user,char* pass){
+//	USER u=(USER)malloc(sizeof(USER));
+//	u->mailsize=0;
+//	u->user=(char*)malloc(sizeof(char)*MAX_USERNAME);
+//	u->pass =  (char*)malloc(sizeof(char)*MAX_PASSWORD);
+//	strncpy(u->user,user,strlen(user));
+//	strncpy(u->pass,pass,strlen(pass));
+//	return u;
+//}
+//
+//int removeSpaces(char* source){
+//  char* i = source;
+//  char* j = source;
+//  while(*j != 0){
+//    *i = *j++;
+//    if(*i != ' ')
+//      i++;
+//  }
+//  *i = 0;
+//  return 1;
+//}

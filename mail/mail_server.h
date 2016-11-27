@@ -24,7 +24,7 @@ void printMail(MAIL mail);
  * @return - boolean value. True if user authenticated, False otherwise.
  *
  */
-bool auth_user(char* client_message, char* username);
+bool auth_user(char* client_message, char* username,USER* users, int size);
 
 /**
  * Convert String Message to DATA object
@@ -79,5 +79,6 @@ int deleteMail(USER user,int id);
  */
 int compose(TOTAL_MAILS mailsDB,USER* users,int size, MAIL mail);
 
-char** str_split(char* a_str, const char a_delim,int* countStr);
+char** str_split(char* a_str, const char a_delim);
+
 #endif /* MAIL_SERVER_H_ */
