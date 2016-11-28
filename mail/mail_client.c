@@ -116,6 +116,77 @@ void recv_data(char* msg){
 	}
 }
 
+int enter_test_auth(char* message, char* user, char* password, char** splitArgs, char* auth, char* server_reply,char* temp){
+
+	strcpy(user, "schneider2");
+	strcpy(password, "302814355");
+	int size=2+strlen(user)+strlen(password);
+	size=inttostr(size,temp);
+	sprintf(auth, "0%s%s %s", temp,user, password);
+	send_data(auth);
+	recv_data(server_reply);
+	if(strncmp(SUC_AUTH, server_reply, strlen(SUC_AUTH))==0){
+		puts(server_reply);
+		free(splitArgs);
+		return 1;
+	}
+	return 0;
+}
+
+int compose_to_server(char* message, char* temp, char** splitArgs, char* send_list, char* subject, char* text, int size, char* comp_txt, char* msgSize, char* server_reply){
+	int to_flag = 0, sub_flag = 0, text_flag = 0;
+	while (!(to_flag && sub_flag && text_flag)) {
+		fgets(message, TOTAL_MSG, stdin);
+		strcpy(temp, message);
+		check_quit(message);
+		splitArgs = str_split(message, ' ');
+		if (to_flag == 0) {
+			if (strncmp(splitArgs[0], TO_ATT, strlen(TO_ATT)) == 0
+					&& splitArgs[1]) {
+				to_flag = 1;
+				strcpy(send_list, temp);
+				//						strcpy(send_list,splitArgs[1]);
+			} else {
+				printf("%s\n", TO_ERR);
+			}
+		} else if (to_flag == 1 && sub_flag == 0) {
+			if (strncmp(splitArgs[0], SUB_ATT, strlen(SUB_ATT)) == 0
+					&& splitArgs[1]) {
+				sub_flag = 1;
+				strcpy(subject, temp);
+			} else {
+				printf("%s\n", SUB_ERR);
+			}
+		} else if (to_flag == 1 && sub_flag == 1) {
+			if (strncmp(splitArgs[0], TXT_ATT, strlen(TXT_ATT)) == 0
+					&& splitArgs[1]) {
+				text_flag = 1;
+				strcpy(text, temp);
+			} else {
+				printf("%s\n", TXT_ERR);
+			}
+		}
+	}
+	size = strlen(send_list)+strlen(subject)+strlen(text);
+	sprintf(comp_txt, "4%s%s%s%s",msgSize, send_list, subject, text);
+//				puts(comp_txt);
+	send_data(comp_txt);
+	recv_data(server_reply);
+	return 0;
+}
+
+int compose_to_server_test(char* message, char* temp, char** splitArgs, char* send_list, char* subject, char* text, int size, char* comp_txt, char* msgSize, char* server_reply){
+	int to_flag = 0, sub_flag = 0, text_flag = 0;
+	strcpy(send_list, "To: Liron,Matan,Lior\n");
+	strcpy(subject, "Subject: This is my subject\n");
+	strcpy(text, "Text: This is my Content\n");
+	size = strlen(send_list)+strlen(subject)+strlen(text);
+	sprintf(comp_txt, "4%s%s%s%s",msgSize, send_list, subject, text);
+	send_data(comp_txt);
+	recv_data(server_reply);
+	return 0;
+}
+
 int enter_auth(char* message, char* user, char* password, char** splitArgs, char* auth, char* server_reply,char* temp){
 	while(1){
 		fgets(message, TOTAL_MSG, stdin);
@@ -190,46 +261,49 @@ void get_cmd_and_execute(char *message, char *temp, char ** splitArgs, char* ser
 			recv_data(server_reply);
 		}
 		else if(strncmp(splitArgs[0], COMP, strlen(COMP))==0){
-			int to_flag = 0, sub_flag = 0, text_flag = 0;
-			while(!(to_flag && sub_flag && text_flag)){
-				fgets(message, TOTAL_MSG, stdin);
-				strcpy(temp, message);
-				check_quit(message);
-				splitArgs=str_split(message,' ');
-				if(to_flag==0){
-					if(strncmp(splitArgs[0],TO_ATT, strlen(TO_ATT))==0 && splitArgs[1]){
-						to_flag = 1;
-						strcpy(send_list, temp);
-//						strcpy(send_list,splitArgs[1]);
-					}
-					else{
-						printf("%s\n", TO_ERR);
-					}
-				}
-				else if(to_flag == 1 && sub_flag == 0){
-					if(strncmp(splitArgs[0],SUB_ATT, strlen(SUB_ATT))==0 && splitArgs[1]){
-						sub_flag = 1;
-						strcpy(subject, temp);
-					}
-					else{
-						printf("%s\n", SUB_ERR);
-					}
-				}
-				else if(to_flag == 1 && sub_flag == 1){
-					if(strncmp(splitArgs[0],TXT_ATT, strlen(TXT_ATT))==0 && splitArgs[1]){
-						text_flag = 1;
-						strcpy(text,temp);
-					}
-					else{
-						printf("%s\n", TXT_ERR);
-					}
-				}
-			}
-			size = strlen(send_list)+strlen(subject)+strlen(text);
-			sprintf(comp_txt, "4%s%s%s%s",msgSize, send_list, subject, text);
-//				puts(comp_txt);
-			send_data(comp_txt);
-			recv_data(server_reply);
+//			compose_to_server(message, temp, splitArgs, send_list, subject, text, size, comp_txt, msgSize, server_reply);
+			compose_to_server_test(message, temp, splitArgs, send_list, subject, text, size, comp_txt, msgSize, server_reply);
+
+//			int to_flag = 0, sub_flag = 0, text_flag = 0;
+//			while(!(to_flag && sub_flag && text_flag)){
+//				fgets(message, TOTAL_MSG, stdin);
+//				strcpy(temp, message);
+//				check_quit(message);
+//				splitArgs=str_split(message,' ');
+//				if(to_flag==0){
+//					if(strncmp(splitArgs[0],TO_ATT, strlen(TO_ATT))==0 && splitArgs[1]){
+//						to_flag = 1;
+//						strcpy(send_list, temp);
+////						strcpy(send_list,splitArgs[1]);
+//					}
+//					else{
+//						printf("%s\n", TO_ERR);
+//					}
+//				}
+//				else if(to_flag == 1 && sub_flag == 0){
+//					if(strncmp(splitArgs[0],SUB_ATT, strlen(SUB_ATT))==0 && splitArgs[1]){
+//						sub_flag = 1;
+//						strcpy(subject, temp);
+//					}
+//					else{
+//						printf("%s\n", SUB_ERR);
+//					}
+//				}
+//				else if(to_flag == 1 && sub_flag == 1){
+//					if(strncmp(splitArgs[0],TXT_ATT, strlen(TXT_ATT))==0 && splitArgs[1]){
+//						text_flag = 1;
+//						strcpy(text,temp);
+//					}
+//					else{
+//						printf("%s\n", TXT_ERR);
+//					}
+//				}
+//			}
+//			size = strlen(send_list)+strlen(subject)+strlen(text);
+//			sprintf(comp_txt, "4%s%s%s%s",msgSize, send_list, subject, text);
+////				puts(comp_txt);
+//			send_data(comp_txt);
+//			recv_data(server_reply);
 		}
 		else{
 			printf(WRNG_CMD);
@@ -291,7 +365,8 @@ int main(int argc, char* argv[]) {
 	// entering user
 	int flag = 0;
 	while(flag == 0){
-		flag = enter_auth(message, user, password, splitArgs, auth, server_reply,msgSize);
+//		flag = enter_auth(message, user, password, splitArgs, auth, server_reply,msgSize);
+		flag = enter_test_auth(message, user, password, splitArgs, auth, server_reply,msgSize);
 	}
 
 	// cmds to mail server
