@@ -159,6 +159,7 @@ int enter_auth(char* message, char* user, char* password, char** splitArgs, char
 		}
 	}
 	free(splitArgs);
+	return 0;
 }
 
 void get_cmd_and_execute(char *message, char *temp, char ** splitArgs, char* server_reply, char *send_list, char *subject, char *text, char* comp_txt,char* msgSize){

@@ -43,6 +43,7 @@ int main(int argc, char* argv[]) {
 	int opCode;
 	int read_size;
 	int totalMailSize = 4500;
+	int sizeOfUsers;
 	//= MAX_SUBJECT + MAX_CONTENT + TOTAL_TO * MAX_USERNAME;
 	char client_message[totalMailSize];
 	char* username = (char*) malloc(sizeof(char) * MAX_USERNAME);
@@ -63,12 +64,25 @@ int main(int argc, char* argv[]) {
 	}
 
 	//Create Users DataBase
-	int sizeOfUsers = UsersDBCreate(users_file, users);
-	prinUsersDb(users, sizeOfUsers);
+//	int sizeOfUsers = UsersDBCreate(users_file, users);
+//	prinUsersDb(users, sizeOfUsers);
+
+
+	//Create Users DataBase
+	if( access( users_file, F_OK ) != -1 ) {
+		printf("here");
+		sizeOfUsers = UsersDBCreate(users_file, users);
+		prinUsersDb(users, sizeOfUsers);
+	} else {
+	   printf("Error While Accessing Users Data File: %s\n",users_file);
+		exit(1);
+	}
 
 	if (sizeOfUsers < 0) {
-		printf("Error While Parsing user.tx File");
+		printf("Error While Parsing %s File", users_file);
+		exit(1);
 	}
+
 
 	//Listening Flow....
 	listenSd = socket(AF_INET, SOCK_STREAM, 0); // For type=SOCK_STREAM protocol 0 is TCP

@@ -80,4 +80,6 @@ USER getUser(USER* users, int size,char* username);
 bool removeSpaces(char* source);
 bool isCommentLine(char* tempLine);
 
+char** str_split(char* a_str, const char a_delim);
+
 #endif /* USERSDB_H_ */

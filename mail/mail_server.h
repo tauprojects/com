@@ -79,6 +79,4 @@ int deleteMail(USER user,int id);
  */
 int compose(TOTAL_MAILS mailsDB,USER* users,int size, MAIL mail);
 
-char** str_split(char* a_str, const char a_delim);
-
 #endif /* MAIL_SERVER_H_ */
