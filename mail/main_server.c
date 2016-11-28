@@ -70,7 +70,6 @@ int main(int argc, char* argv[]) {
 
 	//Create Users DataBase
 	if( access( users_file, F_OK ) != -1 ) {
-		printf("here");
 		sizeOfUsers = UsersDBCreate(users_file, users);
 		prinUsersDb(users, sizeOfUsers);
 	} else {
@@ -208,11 +207,11 @@ int main(int argc, char* argv[]) {
 					//client_message = "4content\0"
 				case COMPOSE:
 					; //Empty statement due to Unallowed declaration (stackoverflow)
-//				MAIL mail = (MAIL) malloc(sizeof(mail));
-//				char* unParsedMail = (char*) malloc(sizeof(char) * 1024);
-//				strcat(unParsedMail, &client_message[5]);
-//				parseMail(unParsedMail, username, mail);
-//				printMail(mail);
+					MAIL mail = (MAIL) malloc(sizeof(mail));
+					char* unParsedMail = (char*) malloc(sizeof(char) * 1024);
+					strcat(unParsedMail, &client_message[5]);
+					parseMail(unParsedMail, username, mail);
+					printMail(mail);
 					write(connSd, "COMPOSE\n", 4500);
 
 					break;

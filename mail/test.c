@@ -22,12 +22,13 @@ typedef enum USER_COMMAND {
 } USER_CMD;
 
 struct mail_data{
-	char* from;  //check name size
-	char** to; //check name size
+	bool isTrash;
 	int totalTo;
+	char* from;  //check name size
 	char* subject;
 	char* content;
-	bool isTrash;
+	char** to; //check name size
+
 };
 typedef struct user_mail* MAIL_PER_USER;
 typedef struct user_struct* USER;

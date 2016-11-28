@@ -1,7 +1,7 @@
 #include "UsersDB.h"
 #include <assert.h>
 
-char** str_split(char* a_str, const char a_delim) {
+char** str_split(char* a_str, const char a_delim, int* cnt) {
 	char** result = 0;
 	size_t count = 0;
 	char* tmp = a_str;
@@ -9,6 +9,7 @@ char** str_split(char* a_str, const char a_delim) {
 	char delim[2];
 	delim[0] = a_delim;
 	delim[1] = 0;
+	int i=0;
 
 	/* Count how many elements will be extracted. */
 	while (*tmp) {
@@ -25,10 +26,9 @@ char** str_split(char* a_str, const char a_delim) {
 	/* Add space for terminating null string so caller
 	 knows where the list of returned strings ends. */
 	count++;
-
 	result = malloc(sizeof(char*) * count);
-
 	if (result) {
+		i++;
 		size_t idx = 0;
 		char* token = strtok(a_str, delim);
 		while (token) {
@@ -39,6 +39,7 @@ char** str_split(char* a_str, const char a_delim) {
 		assert(idx == count - 1);
 		*(result + idx) = 0;
 	}
+	*cnt = count -1;
 	return result;
 }
 
@@ -51,7 +52,7 @@ int UsersDBCreate(const char* filename, USER* users){
 	if (fp == NULL) {return -1;}    //checking file
 	//temporary variables
 	int lineNum=0;
-	char** splitArgs;
+//	char** splitArgs;
 	char tempLine[1024];
 	char* temp;
 	bool isValidLine=true;
@@ -65,26 +66,26 @@ int UsersDBCreate(const char* filename, USER* users){
 		else{
 			tempLine[strlen(tempLine)]='\0';
 		}
-		printf("%s\n", tempLine);
-		splitArgs = str_split(tempLine, '\t');
-		printf("user: %s pass: %s\n", tempLine);
+//		printf("%s\n", tempLine);
+//		splitArgs = str_split(tempLine, ' ');
+//		printf("user: %s pass: %s\n", tempLine);
 
-//		temp = strchr(tempLine, '\t');
-////		temp = strtok(tempLine, "    ");
-//		if(temp==NULL){ isValidLine=false;}
-//		else{
-//			*temp='\0';
-//			strcpy(username,tempLine);
-//			strcpy(password,temp+1);
-////			isValidLine= removeSpaces(username) && removeSpaces(password);
-//		}
-//		if(!isValidLine){  //checking line
-//			fclose(fp);
-//			return -1;
-//		}
-//		users[size]=createUser(username,password);
-		users[size]=createUser(splitArgs[0],splitArgs[1]);
-		free(splitArgs);
+		temp = strchr(tempLine, '\t');
+//		temp = strtok(tempLine, "    ");
+		if(temp==NULL){ isValidLine=false;}
+		else{
+			*temp='\0';
+			strcpy(username,tempLine);
+			strcpy(password,temp+1);
+//			isValidLine= removeSpaces(username) && removeSpaces(password);
+		}
+		if(!isValidLine){  //checking line
+			fclose(fp);
+			return -1;
+		}
+		users[size]=createUser(username,password);
+//		users[size]=createUser(splitArgs[0],splitArgs[1]);
+//		free(splitArgs);
 		printf("\nUsername: %s",users[size]->user);
 		printf("\nPassword: %s",users[size]->pass);
 		size++;
@@ -99,9 +100,9 @@ int UsersDBCreate(const char* filename, USER* users){
 
 USER createUser(char* user,char* pass){
 	USER u=(USER)malloc(sizeof(USER));
-	u->mailsize=0;
 	u->user=(char*)malloc(sizeof(char)*MAX_USERNAME);
 	u->pass =  (char*)malloc(sizeof(char)*MAX_PASSWORD);
+	u->mailsize=0;
 	strncpy(u->user,user,strlen(user));
 	strncpy(u->pass,pass,strlen(pass));
 	return u;

@@ -48,16 +48,16 @@ int showMail(MAIL mail, int id, char *resMail) {
 }
 
 char* show_to(MAIL mail) {
-	char* showTo = (char*) malloc(sizeof(char) * TOTAL_TO * 100);
-	for (int i = 0; i < mail->totalTo; i++) {
-		if (i == 0)
-			strcpy(showTo, mail->to[i]);
-		else
-			strcat(showTo, mail->to[i]);
-		if (i != mail->totalTo - 1)
-			strcat(showTo, ",");
-	}
-	return showTo;
+//	char* showTo = (char*) malloc(sizeof(char) * TOTAL_TO * MAX_USERNAME);
+//	for (int i = 0; i < mail->totalTo; i++) {
+//		if (i == 0)
+//			strcpy(showTo, mail->to[i]);
+//		else
+//			strcat(showTo, mail->to[i]);
+//		if (i != mail->totalTo - 1)
+//			strcat(showTo, ",");
+//	}
+	return mail->to;
 }
 
 int getMail(USER user, int id, char* stringMail) {
@@ -97,19 +97,23 @@ int deleteMail(USER user, int id) {
 
 
 int compose(TOTAL_MAILS mailsDB, USER* users, int size, MAIL mail) {
+	int cnt;
 	if (mailsDB->size >= MAXMAILS) {
 		return -1;
 	}
 	if (mail->totalTo > 20) {
 		return -2;
 	}
+
+	char** To = str_split(mail->to,',',&cnt);
 	int newMailServerID = mailsDB->size;
 	mailsDB->mails[newMailServerID] = mail;
 	mailsDB->size++;
 
 	for (int i = 0; i < mail->totalTo; i++) {
 		for (int i = 0; i < size; i++) {
-			if (strcmp(users[i]->user, mailsDB->mails[newMailServerID]->to[i])
+//			if (strcmp(users[i]->user, mailsDB->mails[newMailServerID]->to[i])
+			if (strcmp(users[i]->user, To[i])
 					== 0) {
 				users[i]->mail[users[i]->mailsize] =
 						mailsDB->mails[newMailServerID];
@@ -121,9 +125,9 @@ int compose(TOTAL_MAILS mailsDB, USER* users, int size, MAIL mail) {
 }
 void printMail(MAIL mail) {
 	printf("From: %s\n", mail->from);
-	printf("To: %s\n", mail->to[1]);
-	printf("subject: %s\n", mail->subject);
-	printf("Content: %s\n", mail->content);
+	printf("To: %s\n", mail->to);
+	printf("Subject: %s\n", mail->subject);
+	printf("Text: %s\n", mail->content);
 	printf("Total To: %d\n", mail->totalTo);
 	printf("Is Trash: %d\n", mail->isTrash);
 }
@@ -136,8 +140,15 @@ int parseMail(char* unparseMail, char* from, MAIL mail) {
 	char* part1 = (char*) malloc(sizeof(char) * MAX_TEMP);
 	char* part2 = (char*) malloc(sizeof(char) * MAX_TEMP);
 	char* part3 = (char*) malloc(sizeof(char) * MAX_TEMP);
+	char* Subject = (char*) calloc(sizeof(char), MAX_SUBJECT);
+	char* Content = (char*) calloc(sizeof(char), MAX_CONTENT);
+	char* toAll = (char*) calloc(sizeof(char), maxTotalToSize);
+	char* toAlltemp = (char*) calloc(sizeof(char), maxTotalToSize);
+	if (!part1 || !part2 || !part3 || !Subject || !Content || !toAll || !toAlltemp){
+		return -1;
+	}
 	char* temp;
-//	int cnt;
+	int cnt;
 
 //Parse Mail to 3 parts
 	temp = strtok(unparseMail, "\n");
@@ -150,25 +161,33 @@ int parseMail(char* unparseMail, char* from, MAIL mail) {
 	strcat(part3, temp);
 
 	//Parse part 1
-	char* toAll = (char*) malloc(sizeof(char) * maxTotalToSize);
-	strcat(toAll, &part1[3]);
-//	char** To = str_split(toAll,',',&cnt);
-	char** To = str_split(toAll, ',');
 
+	strcat(toAll, &part1[4]);
+	strcat(toAlltemp, &part1[4]);
+
+	char** To = str_split(toAlltemp,',',&cnt);
+//	char** To = str_split(toAll, ',');
+	for(int j=0;j<cnt;j++)
+		free(To[j]);
+	free(To);
+	free(toAlltemp);
 	//Parse part 2
-	char* Subject = (char*) malloc(sizeof(char) * MAX_SUBJECT);
-	strcat(Subject, &part2[8]);
+	strcpy(Subject, &part2[9]);
+	printf("\nsub: %s", Subject);
 
 	//Parse part 3
-	char* Content = (char*) malloc(sizeof(char) * MAX_CONTENT);
-	strcat(Content, &part3[8]);
+	strcat(Content, &part3[6]);
 
-	mail->from = from;
-	mail->content = Content;
-	mail->subject = Subject;
-	mail->to = To;
-//	mail->totalTo=cnt;
+//	printf("\nsplitted: %s", To[0]);
+
 	mail->isTrash = false;
+	mail->totalTo=cnt;
+	mail->from = from;
+	mail->subject = Subject;
+	mail->content = Content;
+	mail->to = toAll;
+	printf("\nmailsub: %s", mail->subject);
+
 
 	free(part1);
 	free(part2);
@@ -176,11 +195,12 @@ int parseMail(char* unparseMail, char* from, MAIL mail) {
 	return 0;
 }
 bool auth_user(char* client_message, char* username, USER* users, int size) {
+	int cnt;
 	if (client_message == NULL) {
 		return -1;
 	}
 	printf("MSG in auth: %s\n", client_message);
-	char** temp = str_split(client_message, ' ');
+	char** temp = str_split(client_message, ' ', &cnt);
 	strncpy(username, temp[0], strlen(temp[0]));
 	char* password = (char*) malloc(sizeof(char) * MAX_PASSWORD);
 	strncpy(password, temp[1], strlen(temp[1]));

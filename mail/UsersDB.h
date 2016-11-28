@@ -44,17 +44,17 @@ typedef struct total_mails* TOTAL_MAILS;
 struct user_struct {
 	char* user;
 	char* pass;
-	MAIL mail[MAXMAILS];
 	int mailsize;
+	MAIL mail[MAXMAILS];
 };
 
 struct mail_data{
-	char* from;  //check name size
-	char** to; //check name size
+	bool isTrash;
 	int totalTo;
+	char* from;  //check name size
 	char* subject;
 	char* content;
-	bool isTrash;
+	char* to; //check name size
 };
 
 struct total_mails{
@@ -80,6 +80,6 @@ USER getUser(USER* users, int size,char* username);
 bool removeSpaces(char* source);
 bool isCommentLine(char* tempLine);
 
-char** str_split(char* a_str, const char a_delim);
+char** str_split(char* a_str, const char a_delim, int* cnt);
 
 #endif /* USERSDB_H_ */
