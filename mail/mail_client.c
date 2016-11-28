@@ -118,8 +118,8 @@ void recv_data(char* msg){
 
 int enter_test_auth(char* message, char* user, char* password, char** splitArgs, char* auth, char* server_reply,char* temp){
 
-	strcpy(user, "schneider2");
-	strcpy(password, "302814355");
+	strcpy(user, "lironemilyg");
+	strcpy(password, "305774382");
 	int size=2+strlen(user)+strlen(password);
 	size=inttostr(size,temp);
 	sprintf(auth, "0%s%s %s", temp,user, password);
@@ -171,7 +171,7 @@ int compose_to_server(char* message, char* temp, char** splitArgs, char* send_li
 	sprintf(comp_txt, "4%s%s%s%s",msgSize, send_list, subject, text);
 //				puts(comp_txt);
 	send_data(comp_txt);
-	recv_data(server_reply);
+//	recv_data(server_reply);
 	return 0;
 }
 
@@ -183,7 +183,7 @@ int compose_to_server_test(char* message, char* temp, char** splitArgs, char* se
 	size = strlen(send_list)+strlen(subject)+strlen(text);
 	sprintf(comp_txt, "4%s%s%s%s",msgSize, send_list, subject, text);
 	send_data(comp_txt);
-	recv_data(server_reply);
+//	recv_data(server_reply);
 	return 0;
 }
 

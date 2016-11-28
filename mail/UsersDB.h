@@ -45,7 +45,7 @@ struct user_struct {
 	char* user;
 	char* pass;
 	int mailsize;
-	MAIL mail[MAXMAILS];
+	int mailId[MAXMAILS];
 };
 
 struct mail_data{
@@ -58,7 +58,7 @@ struct mail_data{
 };
 
 struct total_mails{
-	MAIL mails[MAXMAILS];
+	MAIL *mails;
 	int size;
 };
 
@@ -82,4 +82,9 @@ bool isCommentLine(char* tempLine);
 
 char** str_split(char* a_str, const char a_delim, int* cnt);
 
+void freeMailDB(TOTAL_MAILS mailsDB);
+
+void freeMails(MAIL* mails,int size);
+
+void freeUser(USER u);
 #endif /* USERSDB_H_ */

@@ -77,7 +77,7 @@ int UsersDBCreate(const char* filename, USER* users){
 			*temp='\0';
 			strcpy(username,tempLine);
 			strcpy(password,temp+1);
-//			isValidLine= removeSpaces(username) && removeSpaces(password);
+			isValidLine= removeSpaces(username) && removeSpaces(password);
 		}
 		if(!isValidLine){  //checking line
 			fclose(fp);
@@ -86,8 +86,8 @@ int UsersDBCreate(const char* filename, USER* users){
 		users[size]=createUser(username,password);
 //		users[size]=createUser(splitArgs[0],splitArgs[1]);
 //		free(splitArgs);
-		printf("\nUsername: %s",users[size]->user);
-		printf("\nPassword: %s",users[size]->pass);
+//		printf("\nUsername: %s",users[size]->user);
+//		printf("\nPassword: %s",users[size]->pass);
 		size++;
 		lineNum++;
 	}
@@ -105,7 +105,15 @@ USER createUser(char* user,char* pass){
 	u->mailsize=0;
 	strncpy(u->user,user,strlen(user));
 	strncpy(u->pass,pass,strlen(pass));
+//	u->mail = (MAIL*)malloc(sizeof(MAIL)*MAXMAILS);
 	return u;
+}
+
+void freeUser(USER u){
+	free(u->user);
+	free(u->pass);
+	free(u->user);
+	free(u);
 }
 
 bool removeSpaces(char* source){
@@ -179,5 +187,17 @@ void prinUsersDb(USER* users, int size){
 	for(int i=0;i<size;i++){
 		fflush(NULL);
 		printf("Username: %s, Password: %s\n" ,users[i]->user ,users[i]->pass);
+	}
+}
+void freeMailDB(TOTAL_MAILS mailsDB){
+	freeMails(mailsDB->mails,mailsDB->size);
+}
+
+void freeMails(MAIL* mails,int size){
+	for(int i=0;i<size;i++){
+		free(mails[i]->from);
+		free(mails[i]->subject);
+		free(mails[i]->content);
+		free(mails[i]->to);
 	}
 }

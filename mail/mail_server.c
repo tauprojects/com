@@ -5,7 +5,7 @@
 #include "mail_server.h"
 #include "UsersDB.h"
 
-int showInbox(USER user, char* totalInbox) {
+int showInbox(USER user, TOTAL_MAILS mailDB,char* totalInbox) {
 	int userSizeMail = user->mailsize;
 	int showMailSize = MAX_SUBJECT + MAX_USERNAME + TEMP_ID;
 	int totalResSize = userSizeMail * showMailSize;
@@ -13,7 +13,7 @@ int showInbox(USER user, char* totalInbox) {
 	//char* totalInbox = (char*)malloc(sizeof(char)*totalResSize);
 	char* mail = (char*) malloc(sizeof(char) * showMailSize);
 	for (int i = 0; i < userSizeMail; i++) {
-		showMail(user->mail[i], i, mail);
+		showMail(mailDB->mails[user->mailId[i]], i, mail);
 		if (mail == NULL) {
 			continue;
 		}
@@ -60,14 +60,15 @@ char* show_to(MAIL mail) {
 	return mail->to;
 }
 
-int getMail(USER user, int id, char* stringMail) {
+int getMail(USER user, TOTAL_MAILS mailDB,int id, char* stringMail) {
 	int totalMailSize = MAX_SUBJECT + MAX_USERNAME + MAX_CONTENT
 			+ TOTAL_TO * MAX_USERNAME;
 	if (user->mailsize <= id) {
 		return -1;
 	}
-	MAIL mail = user->mail[id];
-	if (mail->isTrash) {
+//	MAIL mail = user->mail[id];
+	int idDB=user->mailId[id];
+	if (mailDB->mails[idDB]->isTrash) {
 		return -2;
 	}
 	if (stringMail == NULL) {
@@ -75,23 +76,23 @@ int getMail(USER user, int id, char* stringMail) {
 	}
 //	char* stringMail = (char*)malloc(sizeof(totalMailSize));
 	strcpy(stringMail, "From:");
-	strcat(stringMail, mail->from);
+	strcat(stringMail, mailDB->mails[idDB]->from);
 	strcat(stringMail, "\nTo: ");
-	strcat(stringMail, show_to(mail));
+	strcat(stringMail, mailDB->mails[idDB]->to);
 	strcat(stringMail, "\nSubject: ");
-	strcat(stringMail, mail->subject);
+	strcat(stringMail, mailDB->mails[idDB]->subject);
 	strcat(stringMail, "\nText: ");
-	strcat(stringMail, mail->content);
+	strcat(stringMail, mailDB->mails[idDB]->content);
 	strcat(stringMail, "\n");
 	return 0;
 }
 
-int deleteMail(USER user, int id) {
+int deleteMail(USER user, TOTAL_MAILS mailDB,int id) {
 	if (user->mailsize <= id) {
 		return -1;
 	}
-	MAIL mail = user->mail[id];
-	mail->isTrash = true;
+	int idDB=user->mailId[id];
+	mailDB->mails[idDB]->isTrash = true;
 	return 0;
 }
 
@@ -113,14 +114,17 @@ int compose(TOTAL_MAILS mailsDB, USER* users, int size, MAIL mail) {
 	for (int i = 0; i < mail->totalTo; i++) {
 		for (int i = 0; i < size; i++) {
 //			if (strcmp(users[i]->user, mailsDB->mails[newMailServerID]->to[i])
-			if (strcmp(users[i]->user, To[i])
-					== 0) {
-				users[i]->mail[users[i]->mailsize] =
-						mailsDB->mails[newMailServerID];
+			if (strcmp(users[i]->user, To[i])== 0) {
+//				users[i]->mail[users[i]->mailsize] =
+//						mailsDB->mails[newMailServerID];
+				users[i]->mailId[users[i]->mailsize] = mailsDB->size -1 ;
 				users[i]->mailsize++;
 			}
 		}
 	}
+	for(int j=0;j<cnt;j++)
+		free(To[j]);
+	free(To);
 	return 0;
 }
 void printMail(MAIL mail) {
@@ -173,7 +177,7 @@ int parseMail(char* unparseMail, char* from, MAIL mail) {
 	free(toAlltemp);
 	//Parse part 2
 	strcpy(Subject, &part2[9]);
-	printf("\nsub: %s", Subject);
+//	printf("\nsub: %s", Subject);
 
 	//Parse part 3
 	strcat(Content, &part3[6]);
@@ -186,7 +190,7 @@ int parseMail(char* unparseMail, char* from, MAIL mail) {
 	mail->subject = Subject;
 	mail->content = Content;
 	mail->to = toAll;
-	printf("\nmailsub: %s", mail->subject);
+//	printf("\nmailsub: %s", mail->subject);
 
 
 	free(part1);
@@ -217,6 +221,11 @@ bool auth_user(char* client_message, char* username, USER* users, int size) {
 		puts("im true");
 		return true;
 	}
+	for(int j=0;j<cnt;j++)
+		free(temp[j]);
+	free(temp);
+	free(password);
+	free(expected_pass);
 	return false;
 }
 

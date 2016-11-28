@@ -44,6 +44,9 @@ int main(int argc, char* argv[]) {
 	int read_size;
 	int totalMailSize = 4500;
 	int sizeOfUsers;
+	TOTAL_MAILS mailsDB=(TOTAL_MAILS)malloc(sizeof(*mailsDB));
+	mailsDB->mails=(MAIL*)malloc(sizeof(MAIL)*MAXMAILS);
+	mailsDB->size=0;
 	//= MAX_SUBJECT + MAX_CONTENT + TOTAL_TO * MAX_USERNAME;
 	char client_message[totalMailSize];
 	char* username = (char*) malloc(sizeof(char) * MAX_USERNAME);
@@ -167,25 +170,29 @@ int main(int argc, char* argv[]) {
 					//Case 2 - Get Mail Relative to ID number
 					//client_message = "2id\t" - Handle the Messeage
 				case GET_MAIL:
-//				id = parseId(&client_message[5]);
-//				ack = getMail(user, id, message); //Parse mail ID
-//				switch (ack) {
-//				case -1:
-//					printf(
-//							"Error While Getting Mail ID Number: %d - Not Found in DB",
-//							id);
-//					break;
-//				case -2:
-//					printf(
-//							"Error While Getting Mail ID Number: %d  - Mail Marked as Trash",
-//							id);
-//					break;
-//				case -3:
-//					printf(
-//							"Error While Getting Mail ID Number: %d  - Internal Server Error",
-//							id);
-//					break;
-//				}
+				id = parseId(&client_message[5]);
+				fflush(NULL);
+				printf("id : %d\n", id);
+				ack = getMail(user,mailsDB, id, message); //Parse mail ID
+				fflush(NULL);
+				printf("ack : %d\n", ack);
+				switch (ack) {
+				case -1:
+					printf(
+							"Error While Getting Mail ID Number: %d - Not Found in DB",
+							id);
+					break;
+				case -2:
+					printf(
+							"Error While Getting Mail ID Number: %d  - Mail Marked as Trash",
+							id);
+					break;
+				case -3:
+					printf(
+							"Error While Getting Mail ID Number: %d  - Internal Server Error",
+							id);
+					break;
+				}
 					write(connSd, "GET_MAIL\n", 4500);
 
 					break;
@@ -208,11 +215,11 @@ int main(int argc, char* argv[]) {
 				case COMPOSE:
 					; //Empty statement due to Unallowed declaration (stackoverflow)
 					MAIL mail = (MAIL) malloc(sizeof(mail));
-					char* unParsedMail = (char*) malloc(sizeof(char) * 1024);
+					char* unParsedMail = (char*) malloc(sizeof(char) * 4500);
 					strcat(unParsedMail, &client_message[5]);
 					parseMail(unParsedMail, username, mail);
 					printMail(mail);
-					write(connSd, "COMPOSE\n", 4500);
+	//				write(connSd, "COMPOSE\n", 4500);
 
 					break;
 
@@ -341,8 +348,15 @@ int main(int argc, char* argv[]) {
 //	} else if (read_size == -1) {
 //		perror("recv failed");
 //	}
-
+	free(username);
+	free(message);
+	freeMailDB(mailsDB);
 	close(listenSd);
+	for(int j=0;j<sizeOfUsers;j++){
+		freeUser(users[j]);
+	}
+	free(users);
+	freeUser(user);
 	return 0;
 }
 
@@ -351,7 +365,7 @@ int getOpcode(char* client_message) {
 	strncpy(temp, client_message, 1);
 	int opCode = atoi(temp);
 //	printf("\nstate is: %d", opCode);
-//	free(temp);
+	free(temp);
 	return opCode;
 }
 

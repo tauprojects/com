@@ -41,7 +41,7 @@ MAIL strToMail(char* data);
  * @params user,pointer to return message
  * @return - int - 0 for success, -1 for wrong ID, -2 if isTrash, -3 Internal Server Error
  */
-int showInbox(USER user,char* msg);
+int showInbox(USER user,TOTAL_MAILS mailDB,char* msg);
 
 /**
  * Show one mail on inbox for user
@@ -59,7 +59,7 @@ int showMail(MAIL mail, int id,char *resMail);
  * @return - int - 0 for success, -1 for wrong ID, -2 if isTrash, -3 Internal Server Error
  *
  */
-int getMail(USER user,int id, char* msg);
+int getMail(USER user,TOTAL_MAILS mailDB,int id, char* msg);
 
 /**
  * Delete mail from the server
@@ -68,7 +68,7 @@ int getMail(USER user,int id, char* msg);
  * @return - 0 on success, -1 if there is no such id
  *
  */
-int deleteMail(USER user,int id);
+int deleteMail(USER user, TOTAL_MAILS mailDB,int id);
 
 /**
  * compose mail in the server
