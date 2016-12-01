@@ -419,6 +419,7 @@ int listenSd; // The listen socket, defined as global for the code that exit wit
 			} else {
 				splitArgs = str_split(&client_message[5],'\t', &cnt);
 				if(splitArgs){
+					memset(curr_username,'\0',MAX_USERNAME);
 					strncpy(curr_username, splitArgs[0], strlen(splitArgs[0]));
 					user_id = authenticate_user(users, NumberOfUsers,curr_username, splitArgs[1]);
 					if (user_id >= 0) {
