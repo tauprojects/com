@@ -218,8 +218,8 @@ int split_mail(char* msg,char * username, MAIL *mail) {
 
 //authenticate_user function
 int authenticate_user(USER* users, int num_of_users, char* username, char* password){
+	password[strlen(password)-1]='\0';
 	printf("%s=====%s=\n", username, password);
-	password[strlen(password)]='\0';
 	int i;
 	for(i=0; i<num_of_users; i++){
 		printf("%s=====%s===\n", username, users[i].user);
