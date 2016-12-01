@@ -219,13 +219,13 @@ int split_mail(char* msg,char * username, MAIL *mail) {
 //authenticate_user function
 int authenticate_user(USER* users, int num_of_users, char* username, char* password){
 	password[strlen(password)-1]='\0';
-	printf("%s=====%s=\n", username, password);
+//	printf("%s=====%s=\n", username, password);
 	int i;
 	for(i=0; i<num_of_users; i++){
-		printf("%s=====%s===\n", username, users[i].user);
+//		printf("%s=====%s===\n", username, users[i].user);
 //		if(strncmp(users[i].user, username, strlen(users[i].user))==0 ){
 		if(strncmp(users[i].user, username, strlen(users[i].user))==0 && strlen(users[i].user) == strlen(username)){
-			printf("%s=====%s===\n", password, users[i].pass);
+//			printf("%s=====%s===\n", password, users[i].pass);
 			if(strncmp(users[i].pass, password, strlen(users[i].pass))==0 && strlen(users[i].pass) == strlen(password)){
 //			if(strncmp(users[i].pass, password, strlen(users[i].pass))==0 ){
 			return i;
