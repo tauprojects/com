@@ -58,6 +58,8 @@ typedef struct USER {
 //function that create a User in USER pointer
 int createUser(char* username, char* password, USER* user) {
 	user->mailAmount = 0;
+	memset(user->user,'\0',MAX_USERNAME);
+	memset(user->pass,'\0',MAX_PASSWORD);
 	strncpy(user->user, username, strlen(username));
 	strncpy(user->pass, password, strlen(password));
 	return 0;
@@ -205,11 +207,16 @@ int split_mail(char* msg,char * username, MAIL *mail) {
 		return -1;
 	mail->isTrash = 0;
 	mail->totalTo = total;
+	memset(mail->from,'\0',MAX_USERNAME);
+	memset(mail->subject,'\0',MAX_SUBJECT);
+	memset(mail->text,'\0',MAX_CONTENT);
 	strncpy(mail->from, username, strlen(username));
 	strncpy(mail->subject, &splitArgs[1][9], strlen(&splitArgs[1][9]));
 	strncpy(mail->text, splitArgs[2], strlen(splitArgs[2]));
-	for (i = 0; i < total; i++)
+	for (i = 0; i < total; i++){
+		memset(mail->to[i],'\0',MAX_USERNAME);
 		strncpy(mail->to[i], to[i], strlen(to[i]));
+	}
 //	printf("after split_mail, the mail is:\nfrom: %s\nsubject: %s\n", mail->from, mail->subject);
 	freeSplit(cnt, splitArgs);
 	freeSplit(total, to);
@@ -219,7 +226,7 @@ int split_mail(char* msg,char * username, MAIL *mail) {
 //authenticate_user function
 int authenticate_user(USER* users, int num_of_users, char* username, char* password){
 	password[strlen(password)-1]='\0';
-	printf("%s=====%s=\n", username, password);
+//	printf("%s=====%s=\n", username, password);
 	int i;
 	for(i=0; i<num_of_users; i++){
 //		printf("%s=====%s===\n", username, users[i].user);
