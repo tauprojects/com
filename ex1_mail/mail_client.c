@@ -335,8 +335,8 @@ int main(int argc, char* argv[]) {
 	// entering user
 	int flag = 0;
 	while(flag == 0){
-//		flag = enter_auth(message, user, password, splitArgs, auth, server_reply,msgSize);
-		flag = enter_test_auth(message, user, password, splitArgs, auth, server_reply,msgSize);
+		flag = enter_auth(message, user, password, splitArgs, auth, server_reply,msgSize);
+//		flag = enter_test_auth(message, user, password, splitArgs, auth, server_reply,msgSize);
 	}
 
 	// cmds to mail server
