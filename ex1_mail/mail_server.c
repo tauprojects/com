@@ -37,6 +37,7 @@ typedef enum USER_COMMAND {
 	AUTH, SHOW_INBOX, GET_MAIL, DELETE_MAIL, COMPOSE, QUIT, QUIT_SERVER
 } USER_CMD;
 
+//MAIL struct - an object that represent a MAIL
 typedef struct MAIL {
 	int isTrash;
 	int totalTo;
@@ -46,6 +47,7 @@ typedef struct MAIL {
 	char to[NUM_OF_CLIENTS][MAX_USERNAME];
 } MAIL;
 
+//USER struct - an object that represent a user
 typedef struct USER {
 	char user[MAX_USERNAME];
 	char pass[MAX_PASSWORD];
@@ -53,6 +55,7 @@ typedef struct USER {
 	int mailIdInDB[MAXMAILS];
 } USER;
 
+//function that create a User in USER pointer
 int createUser(char* username, char* password, USER* user) {
 	user->mailAmount = 0;
 	strncpy(user->user, username, strlen(username));
@@ -60,6 +63,7 @@ int createUser(char* username, char* password, USER* user) {
 	return 0;
 }
 
+//copy from stack overflow - str split function
 char** str_split(char* a_str, const char a_delim, int* cnt) {
 	char** result = 0;
 	size_t count = 0;
@@ -102,6 +106,7 @@ char** str_split(char* a_str, const char a_delim, int* cnt) {
 	return result;
 }
 
+//function that free the return of str_split
 void freeSplit(int cnt, char** splitArgs) {
 	int j;
 	for (j = 0; j < cnt; j++)
@@ -121,6 +126,7 @@ bool removeSpaces(char* source) {
 	return true;
 }
 
+//create user db in order to the user file
 int UsersDBCreate(const char* filename, USER* users) {
 	int size = 0, cnt;
 	char tempLine[1024];
@@ -151,6 +157,7 @@ int UsersDBCreate(const char* filename, USER* users) {
 	return size;
 }
 
+//function that return an string of all the addressee of specific mail
 char* show_to(MAIL *mail) {
 	int i;
 	char* showTo = (char*) calloc(sizeof(char), MAX_USERNAME * NUM_OF_CLIENTS);
@@ -168,6 +175,7 @@ char* show_to(MAIL *mail) {
 	return showTo;
 }
 
+//function that create a mail-format for get mail.
 char* build_mail(MAIL *mail) {
 	int total = MAX_USERNAME * (NUM_OF_CLIENTS + 1) + MAX_SUBJECT + MAX_CONTENT
 			+ 100;
@@ -184,6 +192,7 @@ char* build_mail(MAIL *mail) {
 	return res;
 }
 
+//sub-functuon of compose - create an mail object in pointer from msg.
 int split_mail(char* msg,char * username, MAIL *mail) {
 	int cnt, total, i;
 	char** splitArgs;
@@ -207,6 +216,7 @@ int split_mail(char* msg,char * username, MAIL *mail) {
 	return 0;
 }
 
+//authenticate_user function
 int authenticate_user(USER* users, int num_of_users, char* username, char* password){
 	password[strlen(password)]='\0';
 	int i;
@@ -222,6 +232,7 @@ int authenticate_user(USER* users, int num_of_users, char* username, char* passw
 	return -1;
 }
 
+//parse id function for get&delete mail
 int parseId(char* message) {
 	char* temp = strchr(message, '\t');
 	int id = atoi(message);
@@ -229,6 +240,7 @@ int parseId(char* message) {
 	return id;
 }
 
+//delete mail function
 int delete_mail(MAIL *mail){
 	if (!mail){
 		return 1;
@@ -237,6 +249,7 @@ int delete_mail(MAIL *mail){
 	return 0;
 }
 
+//get mail function
 char* get_mail(MAIL *mail){
 	if(mail->isTrash == 0){
 		return build_mail(mail);
@@ -244,6 +257,7 @@ char* get_mail(MAIL *mail){
 	return "mail deleted";
 }
 
+//sub function of compose. update in user struct the new mail
 int update_users(USER* users, int num_users, MAIL *mail, int mail_id){
 	int i, j;
 	for(i = 0; i < mail->totalTo; i++){
@@ -259,6 +273,7 @@ int update_users(USER* users, int num_users, MAIL *mail, int mail_id){
 	return 0;
 }
 
+//compose mail function
 int compose_mail(char* msg,char* username, MAIL *mail, USER* users, int NumberOfUsers, int* mailsInServer){
 //	printf("in compose, this is the msg that was received from: %s\n%s\n",username,msg);
 	int indication;
@@ -285,6 +300,7 @@ void show_mailDB(MAIL* mails, int mailsInServer){
 	}
 }
 
+//show inbox function
 char* show_inbox(USER user, MAIL *mails){
 	int i;
 	int total = MAX_USERNAME * (NUM_OF_CLIENTS + 1) + MAX_SUBJECT + MAX_CONTENT
@@ -306,6 +322,7 @@ char* show_inbox(USER user, MAIL *mails){
 	return result;
 }
 
+//get opcode of function - for main switch case
 int getOpcode(char* client_message) {
 	char* temp = (char*) malloc(sizeof(char) * 5);
 	strncpy(temp, client_message, 1);
@@ -422,6 +439,7 @@ int listenSd; // The listen socket, defined as global for the code that exit wit
 				exit(EXIT_FAILURE);
 			} else {
 				opCode = getOpcode(client_message);
+				//cases of function
 				switch (opCode) {
 				case SHOW_INBOX:
 //					show_mailDB(totalMails, mailsInServer);
@@ -484,50 +502,6 @@ int listenSd; // The listen socket, defined as global for the code that exit wit
 		}
 		close(connSd);
 	}
-//	// checking build and split mail
-//	char msg[] =
-//			"From: li\nTo: lironemilyg,gizunterman\nSubject: hello\nText: hi whatsuppppp???";
-//	char msg2[] =
-//			"From: big\nTo: lironemilyg,gizunterman,schneider2\nSubject: bye bye\nText: it is late now";
-////	ack = split_mail(msg, &totalMails[0]);
-////	build = build_mail(&totalMails[0]);
-////	printf("%s", build);
-////	ack = split_mail(msg2, &totalMails[1]);
-////	build = build_mail(&totalMails[1]);
-////	printf("%s", build);
-////	build = get_mail(&totalMails[0]);
-////	printf("mail: \n%s", build);
-////	delete_mail(&totalMails[0]);
-////	build = get_mail(&totalMails[0]);
-////	printf("mail: \n%s", build);
-//	ack = compose_mail(msg, &totalMails[0], users, NumberOfUsers, &mailsInServer);
-////	printf("%d\n",ack);
-//	build = get_mail(&totalMails[0]);
-////	printf("mail: \n%s", build);
-//	ack = compose_mail(msg2, &totalMails[1], users, NumberOfUsers, &mailsInServer);
-//	for(i=0;i<NumberOfUsers;i++){
-////		printf("user: %s total mails: %d, mail[0]: %d\n",users[i].user,users[i].mailAmount,users[i].mailIdInDB[0]);
-//		inboxUser=show_inbox(users[i],totalMails);
-//		printf("user: %s showInbox: %s\n",users[i].user,inboxUser);
-//		memset(inboxUser, 0, strlen(inboxUser));
-//	}
-//
-////	  checking authentication
-////	char username1[] = "schneider2";
-////	char password1[] = "302814355";
-////	char username2[] = "schneider2456";
-////	char username3[] = "gizunterman";
-////	char password2[] = "303157804";
-////	success = authenticate_user(users, NumberOfUsers, username1, password1);
-////	printf("auth success = %d\n", success);
-////	success = authenticate_user(users, NumberOfUsers, username2, password1);
-////	printf("auth not success = %d\n", success);
-////	success = authenticate_user(users, NumberOfUsers, username1, password2);
-////	printf("auth not success = %d\n", success);
-////	success = authenticate_user(users, NumberOfUsers, username3, password2);
-////	printf("auth success = %d\n", success);
-//
-//
 
 	// free everything
 	if(build){
