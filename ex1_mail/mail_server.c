@@ -218,11 +218,14 @@ int split_mail(char* msg,char * username, MAIL *mail) {
 
 //authenticate_user function
 int authenticate_user(USER* users, int num_of_users, char* username, char* password){
+	printf("%s=====%s=\n", username, password);
 	password[strlen(password)]='\0';
 	int i;
 	for(i=0; i<num_of_users; i++){
+		printf("%s=====%s===\n", username, users[i].user);
 //		if(strncmp(users[i].user, username, strlen(users[i].user))==0 ){
 		if(strncmp(users[i].user, username, strlen(users[i].user))==0 && strlen(users[i].user) == strlen(username)){
+			printf("%s=====%s===\n", password, users[i].pass);
 			if(strncmp(users[i].pass, password, strlen(users[i].pass))==0 && strlen(users[i].pass) == strlen(password)){
 //			if(strncmp(users[i].pass, password, strlen(users[i].pass))==0 ){
 			return i;
@@ -262,11 +265,11 @@ int update_users(USER* users, int num_users, MAIL *mail, int mail_id){
 	int i, j;
 	for(i = 0; i < mail->totalTo; i++){
 		for(j = 0; j < num_users; j++){
-			printf("to: %s    mail: %s\n",users[j].user, mail->to[i]);
+//			printf("to: %s    mail: %s\n",users[j].user, mail->to[i]);
 			if(strncmp(mail->to[i], users[j].user, strlen(mail->to[i]))== 0 && strlen(mail->to[i]) == strlen(users[j].user)){
 				users[j].mailIdInDB[users[j].mailAmount] = mail_id;
 				users[j].mailAmount++;
-				printf("user: %s\nmail id:%d\n",users[j].user,users[j].mailAmount);
+//				printf("user: %s\nmail id:%d\n",users[j].user,users[j].mailAmount);
 			}
 		}
 	}
