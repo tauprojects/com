@@ -55,6 +55,17 @@ typedef struct USER {
 	int mailIdInDB[MAXMAILS];
 } USER;
 
+//Safe Free Allocated Memory
+//Checks if object allocated before and print error with line number otherwise.
+void safeFree(void* object,int line){
+//	printf("Trying to free object allocated memory in Line number: %d\n",line); //For debug mode
+	if(object)
+		free(object);
+	else
+		printf("Unable or No_Need to free object allocated memory in Line number: %d\n",line);
+}
+
+
 //function that create a User in USER pointer
 int createUser(char* username, char* password, USER* user) {
 	user->mailAmount = 0;
@@ -112,8 +123,8 @@ char** str_split(char* a_str, const char a_delim, int* cnt) {
 void freeSplit(int cnt, char** splitArgs) {
 	int j;
 	for (j = 0; j < cnt; j++)
-		free(splitArgs[j]);
-	free(splitArgs);
+		safeFree(splitArgs[j],__LINE__);
+	safeFree(splitArgs,__LINE__);
 }
 
 bool removeSpaces(char* source) {
@@ -127,6 +138,8 @@ bool removeSpaces(char* source) {
 	*i = 0;
 	return true;
 }
+
+
 
 //create user db in order to the user file
 int UsersDBCreate(const char* filename, USER* users) {
@@ -152,8 +165,8 @@ int UsersDBCreate(const char* filename, USER* users) {
 		createUser(username, password, &users[size]);
 		size++;
 		freeSplit(cnt, splitArgs);
-		free(username);
-		free(password);
+		safeFree(username,__LINE__);
+		safeFree(password,__LINE__);
 	}
 	fclose(fp);
 	return size;
@@ -190,7 +203,7 @@ char* build_mail(MAIL *mail) {
 		return NULL;
 	sprintf(res, "From: %s\nTo: %s\nSubject: %s\n%s\n", mail->from, to, mail->subject,
 			mail->text);
-	free(to);
+	safeFree(to,__LINE__);
 	return res;
 }
 
@@ -217,7 +230,6 @@ int split_mail(char* msg,char * username, MAIL *mail) {
 		memset(mail->to[i],'\0',MAX_USERNAME);
 		strncpy(mail->to[i], to[i], strlen(to[i]));
 	}
-//	printf("after split_mail, the mail is:\nfrom: %s\nsubject: %s\n", mail->from, mail->subject);
 	freeSplit(cnt, splitArgs);
 	freeSplit(total, to);
 	return 0;
@@ -226,15 +238,10 @@ int split_mail(char* msg,char * username, MAIL *mail) {
 //authenticate_user function
 int authenticate_user(USER* users, int num_of_users, char* username, char* password){
 	password[strlen(password)-1]='\0';
-//	printf("%s=====%s=\n", username, password);
 	int i;
 	for(i=0; i<num_of_users; i++){
-//		printf("%s=====%s===\n", username, users[i].user);
-//		if(strncmp(users[i].user, username, strlen(users[i].user))==0 ){
 		if(strncmp(users[i].user, username, strlen(users[i].user))==0 && strlen(users[i].user) == strlen(username)){
-//			printf("%s=====%s===\n", password, users[i].pass);
 			if(strncmp(users[i].pass, password, strlen(users[i].pass))==0 && strlen(users[i].pass) == strlen(password)){
-//			if(strncmp(users[i].pass, password, strlen(users[i].pass))==0 ){
 			return i;
 			}
 		}
@@ -311,6 +318,7 @@ void show_mailDB(MAIL* mails, int mailsInServer){
 }
 
 //show inbox function
+//return allocated String - need to be free the return object
 char* show_inbox(USER user, MAIL *mails){
 	int i;
 	int total = MAX_USERNAME * (NUM_OF_CLIENTS + 1) + MAX_SUBJECT + MAX_CONTENT
@@ -318,6 +326,10 @@ char* show_inbox(USER user, MAIL *mails){
 	char* result = (char*)calloc(sizeof(char), total*user.mailAmount);
 	if (!result){
 		return NULL;
+	}
+	if(user.mailAmount==0){
+		strncat(result,"No Mails To Show In Inbox",strlen("No Mails To Show In Inbox"));
+
 	}
 	for(i = 0; i< user.mailAmount; i++){
 		if(!mails[user.mailIdInDB[i]].isTrash){
@@ -454,9 +466,10 @@ int listenSd; // The listen socket, defined as global for the code that exit wit
 				switch (opCode) {
 				case SHOW_INBOX:
 //					show_mailDB(totalMails, mailsInServer);
+
 					inboxUser=show_inbox(users[user_id],totalMails);
 					write(connSd, inboxUser, strlen(inboxUser));
-					free(inboxUser);
+					safeFree(inboxUser,__LINE__);
 					break;
 				case GET_MAIL:
 					id = parseId(&client_message[5]);
@@ -493,20 +506,10 @@ int listenSd; // The listen socket, defined as global for the code that exit wit
 				case QUIT_SERVER:
 					close(connSd);
 					close(listenSd);
-					if (build) {
-						free(build);
-					}
-					for (i = 0; i < mailsInServer; i++) {
-						free(&totalMails[i]);
-					}
-					free(totalMails);
-//					for (i = 0; i < NumberOfUsers; i++) {
-//						free(&users[i]);
-//					}
-					free(users);
-					if (inboxUser) {
-						free(inboxUser);
-					}
+					safeFree(build,__LINE__); //unable to free in some cases
+				    safeFree(totalMails,__LINE__);
+					safeFree(users,__LINE__);
+					safeFree(inboxUser,__LINE__); //unable to free in some cases
 					return 0;
 				}
 			}
@@ -515,21 +518,10 @@ int listenSd; // The listen socket, defined as global for the code that exit wit
 	}
 
 	// free everything
-	if(build){
-		free(build);
-	}
-
-	for (i = 0; i < mailsInServer; i++) {
-		free(&totalMails[i]);
-	}
-	free(totalMails);
-	for (i = 0; i < NumberOfUsers; i++) {
-		free(&users[i]);
-	}
-	free(users);
-	if(inboxUser){
-		free(inboxUser);
-	}
+	safeFree(build,__LINE__);
+	safeFree(totalMails,__LINE__);
+	safeFree(users,__LINE__);
+	safeFree(inboxUser,__LINE__);
 	close(listenSd);
 	return 0;
 }
