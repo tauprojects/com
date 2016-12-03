@@ -321,6 +321,7 @@ void show_mailDB(MAIL* mails, int mailsInServer){
 //return allocated String - need to be free the return object
 char* show_inbox(USER user, MAIL *mails){
 	int i;
+//	int allTrashed=0;
 	int total = MAX_USERNAME * (NUM_OF_CLIENTS + 1) + MAX_SUBJECT + MAX_CONTENT
 				+ 100;
 	char* result = (char*)calloc(sizeof(char), total*user.mailAmount);
@@ -334,6 +335,7 @@ char* show_inbox(USER user, MAIL *mails){
 	}
 	for(i = 0; i< user.mailAmount; i++){
 		if(!mails[user.mailIdInDB[i]].isTrash){
+//			allTrashed=1;
 			char mailInbox[total];
 //			printf("testing attributes: from: %s\nsubject: %s\n", mails[user.mailIdInDB[i]].from,mails[user.mailIdInDB[i]].subject);
 			sprintf(mailInbox,"%d %s %s\n",i,mails[user.mailIdInDB[i]].from,mails[user.mailIdInDB[i]].subject);
@@ -342,6 +344,15 @@ char* show_inbox(USER user, MAIL *mails){
 //			printf("text from show_inbox phase: %d\n%s\n", i, result);
 		}
 	}
+	if(strlen(result)<2){
+		char* noMailMsg = (char*)calloc(sizeof(char), total*user.mailAmount);
+		strncat(result,"No Mails To Show In Inbox",strlen("No Mails To Show In Inbox"));
+	}
+
+//	if(allTrashed==0){
+//		char* noMailMsg = (char*)calloc(sizeof(char), total*user.mailAmount);
+//		strncat(result,"No Mails To Show In Inbox",strlen("No Mails To Show In Inbox"));
+//	}
 
 	return result;
 }
@@ -496,9 +507,7 @@ int listenSd; // The listen socket, defined as global for the code that exit wit
 				case DELETE_MAIL:
 					id = parseId(&client_message[5]);
 					id_in_db = users[user_id].mailIdInDB[id];
-					if(delete_mail(&totalMails[id_in_db])==0){
-						users[user_id].mailAmount--;
-					}
+					delete_mail(&totalMails[id_in_db]);
 					break;
 				case COMPOSE:
 					ack = compose_mail(&client_message[5],curr_username, &totalMails[mailsInServer], users, NumberOfUsers, &mailsInServer);
