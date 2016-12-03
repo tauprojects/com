@@ -14,7 +14,7 @@ EXEC1 = mail_server
 EXEC2 = mail_client
 
 
-C_COMP_FLAG = -std=c99   -DNDEBUG 
+C_COMP_FLAG = -Wall -g  -DNDEBUG 
 
 #C_COMP_FLAG = -std=c99 -Wall -Wextra \
 #-Werror -pedantic-errors -DNDEBUG

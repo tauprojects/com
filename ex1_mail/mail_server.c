@@ -65,8 +65,8 @@ void safeFree(void* object,int line){
 //	printf("Trying to free object allocated memory in Line number: %d\n",line); //For debug mode
 	if(object)
 		free(object);
-	else
-		printf("Unable or No_Need to free object allocated memory in Line number: %d\n",line);
+	else;
+//		printf("Unable or No_Need to free object allocated memory in Line number: %d\n",line);
 }
 
 
@@ -512,7 +512,7 @@ int listenSd; // The listen socket, defined as global for the code that exit wit
 					break;
 				case COMPOSE:
 					ack = compose_mail(&client_message[5],curr_username, &totalMails[mailsInServer], users, NumberOfUsers, &mailsInServer);
-					printf("ack: %d   mailinServer: %d\n",ack, mailsInServer);
+//					printf("ack: %d   mailinServer: %d\n",ack, mailsInServer);
 					break;
 				case QUIT:
 					quitFlag = 0;
