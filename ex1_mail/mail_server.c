@@ -345,7 +345,6 @@ char* show_inbox(USER user, MAIL *mails){
 		}
 	}
 	if(strlen(result)<2){
-		char* noMailMsg = (char*)calloc(sizeof(char), total*user.mailAmount);
 		strncat(result,"No Mails To Show In Inbox",strlen("No Mails To Show In Inbox"));
 	}
 
