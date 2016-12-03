@@ -1,9 +1,11 @@
+
 /*
- * try.c
- *
- *  Created on: Nov 28, 2016
- *      Author: lirongazit
+ * mail_srever.c
+ * Created By: Liron Gazit, Lior Schneider, Matan Gizunterman
+ * TAU Username: lironemilyg , gizunterman , schneider2
+ * ID number: 305774382, 302814355, 303157804
  */
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -54,6 +56,8 @@ typedef struct USER {
 	int mailAmount;
 	int mailIdInDB[MAXMAILS];
 } USER;
+
+
 
 //Safe Free Allocated Memory
 //Checks if object allocated before and print error with line number otherwise.
@@ -321,7 +325,6 @@ void show_mailDB(MAIL* mails, int mailsInServer){
 //return allocated String - need to be free the return object
 char* show_inbox(USER user, MAIL *mails){
 	int i;
-//	int allTrashed=0;
 	int total = MAX_USERNAME * (NUM_OF_CLIENTS + 1) + MAX_SUBJECT + MAX_CONTENT
 				+ 100;
 	char* result = (char*)calloc(sizeof(char), total*user.mailAmount);
@@ -335,7 +338,6 @@ char* show_inbox(USER user, MAIL *mails){
 	}
 	for(i = 0; i< user.mailAmount; i++){
 		if(!mails[user.mailIdInDB[i]].isTrash){
-//			allTrashed=1;
 			char mailInbox[total];
 //			printf("testing attributes: from: %s\nsubject: %s\n", mails[user.mailIdInDB[i]].from,mails[user.mailIdInDB[i]].subject);
 			sprintf(mailInbox,"%d %s %s\n",i,mails[user.mailIdInDB[i]].from,mails[user.mailIdInDB[i]].subject);
@@ -344,14 +346,10 @@ char* show_inbox(USER user, MAIL *mails){
 //			printf("text from show_inbox phase: %d\n%s\n", i, result);
 		}
 	}
+	//Case where all User inbox mails are trashed
 	if(strlen(result)<2){
 		strncat(result,"No Mails To Show In Inbox",strlen("No Mails To Show In Inbox"));
 	}
-
-//	if(allTrashed==0){
-//		char* noMailMsg = (char*)calloc(sizeof(char), total*user.mailAmount);
-//		strncat(result,"No Mails To Show In Inbox",strlen("No Mails To Show In Inbox"));
-//	}
 
 	return result;
 }
@@ -474,26 +472,21 @@ int listenSd; // The listen socket, defined as global for the code that exit wit
 				exit(EXIT_FAILURE);
 			} else {
 				opCode = getOpcode(client_message);
+
 				//cases of function
 				switch (opCode) {
 				case SHOW_INBOX:
-//					show_mailDB(totalMails, mailsInServer);
-
 					inboxUser=show_inbox(users[user_id],totalMails);
 					write(connSd, inboxUser, strlen(inboxUser));
 					safeFree(inboxUser,__LINE__);
 					break;
 				case GET_MAIL:
 					id = parseId(&client_message[5]);
-//					printf("id: %d   user id: %d\n",id,users[user_id].mailAmount);
 					if(id < users[user_id].mailAmount){
 						id_in_db = users[user_id].mailIdInDB[id];
 						if(id_in_db < mailsInServer){
 							build = get_mail(&totalMails[id_in_db]);
 							write(connSd, build, strlen(build));
-//							if(build){
-//								free(build);
-//							}
 						}
 						else{
 							write(connSd, "The requested mail does not exist in DB", strlen("The requested mail does not exist in DB"));

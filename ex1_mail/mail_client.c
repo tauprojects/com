@@ -1,16 +1,8 @@
 /*
  * mail_client.c
- *
- *  Created on: Nov 30, 2016
- *      Author: user
- */
-
-
-/*
- * mail_client.c
- *
- *  Created on: Nov 12, 2016
- *      Author: lirongazit
+ * Created By: Liron Gazit, Lior Schneider, Matan Gizunterman
+ * TAU Username: lironemilyg , gizunterman , schneider2
+ * ID number: 305774382, 302814355, 303157804
  */
 
 #include <stdio.h>
@@ -272,8 +264,8 @@ void get_cmd_and_execute(char *message, char *temp, char ** splitArgs, char* ser
 			send_data(temp);
 		}
 		else if(strncmp(splitArgs[0], COMP, strlen(COMP))==0){
-//			compose_to_server(message, temp, splitArgs, send_list, subject, text, size, comp_txt, msgSize, server_reply);
-			compose_to_server_test(message, temp, splitArgs, send_list, subject, text, size, comp_txt, msgSize, server_reply);
+			compose_to_server(message, temp, splitArgs, send_list, subject, text, size, comp_txt, msgSize, server_reply);
+//			compose_to_server_test(message, temp, splitArgs, send_list, subject, text, size, comp_txt, msgSize, server_reply); //For Debug Mode
 		}
 		else{
 			printf(WRNG_CMD);
