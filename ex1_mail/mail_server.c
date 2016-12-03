@@ -327,6 +327,7 @@ char* show_inbox(USER user, MAIL *mails){
 	if (!result){
 		return NULL;
 	}
+
 	if(user.mailAmount==0){
 		strncat(result,"No Mails To Show In Inbox",strlen("No Mails To Show In Inbox"));
 
@@ -341,6 +342,7 @@ char* show_inbox(USER user, MAIL *mails){
 //			printf("text from show_inbox phase: %d\n%s\n", i, result);
 		}
 	}
+
 	return result;
 }
 
@@ -484,17 +486,19 @@ int listenSd; // The listen socket, defined as global for the code that exit wit
 //							}
 						}
 						else{
-							write(connSd, "mail does not exist", strlen("mail does not exist"));
+							write(connSd, "The requested mail does not exist in DB", strlen("The requested mail does not exist in DB"));
 						}
 					}
 					else{
-						write(connSd, "mail does not exist", strlen("mail does not exist"));
+						write(connSd, "The requested mail does not exist in DB", strlen("The requested mail does not exist in DB"));
 					}
 					break;
 				case DELETE_MAIL:
 					id = parseId(&client_message[5]);
 					id_in_db = users[user_id].mailIdInDB[id];
-					delete_mail(&totalMails[id_in_db]);
+					if(delete_mail(&totalMails[id_in_db])==0){
+						users[user_id].mailAmount--;
+					}
 					break;
 				case COMPOSE:
 					ack = compose_mail(&client_message[5],curr_username, &totalMails[mailsInServer], users, NumberOfUsers, &mailsInServer);
