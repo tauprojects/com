@@ -441,11 +441,20 @@ int listenSd; // The listen socket, defined as global for the code that exit wit
 		int authFlag = 1;
 		while (authFlag) {
 			memset(client_message, 0, 4500);
-			printf("Ready For USER\n");
+//			printf("Ready For USER\n");
 			if (recv(connSd, client_message, 4500, 0) < 0) {
 				printf("Failed to receive from server: %s\n", strerror(errno));
 				exit(EXIT_FAILURE);
 			} else {
+				if(getOpcode(client_message)==6){
+					close(connSd);
+					close(listenSd);
+					safeFree(build,__LINE__); //unable to free in some cases - ITS OK!
+				    safeFree(totalMails,__LINE__);
+					safeFree(users,__LINE__);
+					safeFree(inboxUser,__LINE__); //unable to free in some cases - ITS OK!
+					return 0;
+				}
 				splitArgs = str_split(&client_message[5],'\t', &cnt);
 				if(splitArgs){
 					memset(curr_username,'\0',MAX_USERNAME);
