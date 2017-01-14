@@ -18,6 +18,9 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <fcntl.h>
+#include <sys/time.h> //FD_SET, FD_ISSET, FD_ZERO macros
+#include <arpa/inet.h>    //close
+#include <sys/types.h>
 
 #define DEFAULT_PORT 6423
 
@@ -368,7 +371,7 @@ int listenSd; // The listen socket, defined as global for the code that exit wit
 
 
  int main(int argc, char* argv[]) {
-	int mailsInServer = 0, NumberOfUsers;
+	int mailsInServer = 0, NumberOfUsers,client_socket[30];
 	int ack, i, port, cnt = 0,opCode,user_id,id_in_db, id;
 	char *build;
 	char* filename;
@@ -402,6 +405,10 @@ int listenSd; // The listen socket, defined as global for the code that exit wit
 		exit(EXIT_FAILURE);
 	}
 
+	//initialise all client_socket[] to 0 so not checked
+	for (i = 0; i < NUM_OF_CLIENTS; i++) {
+		client_socket[i] = 0;
+	}
 	//Listening Flow....
 	listenSd = socket(AF_INET, SOCK_STREAM, 0); // For type=SOCK_STREAM protocol 0 is TCP
 	if (listenSd == -1) {
@@ -409,8 +416,11 @@ int listenSd; // The listen socket, defined as global for the code that exit wit
 		exit(EXIT_FAILURE);
 	}
 
+    //set of socket descriptors
+    fd_set readfds,writefds;
+
 	struct sockaddr_in myaddr, their_addr;
-	int sin_size;
+	int sin_size, max_sd, sd, activity,connSd;
 	myaddr.sin_family = AF_INET;
 	myaddr.sin_port = htons(port);
 	myaddr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -421,20 +431,73 @@ int listenSd; // The listen socket, defined as global for the code that exit wit
 		exit(EXIT_FAILURE);
 	}
 
+	 //try to specify maximum of NUM_OF_CLIENTS pending connections for the master socket
 	if (listen(listenSd, NUM_OF_CLIENTS) == -1) {   // Listen to the socket
 		printf("Failed to listen to the listen socket: %s\n", strerror(errno));
 		close(listenSd);
 		exit(EXIT_FAILURE);
 	}
+
 	// loops as long as there are users appending
 	int thereAreUsers = 1;
 	while (thereAreUsers) {
-		int connSd = accept(listenSd, (struct sockaddr*) &their_addr, (socklen_t*) &sin_size);  // Accept a connection
-		if (connSd == -1) {
-			printf("Failed to accept a connection: %s\n", strerror(errno));
-			close(listenSd);
-			exit(EXIT_FAILURE);
+        //clear the socket set
+        FD_ZERO(&readfds);
+
+        //add master socket to set
+        FD_SET(listenSd, &readfds);
+        max_sd = listenSd;
+
+		//add child sockets to set
+		for (i = 0; i < NUM_OF_CLIENTS; i++) {
+			//socket descriptor
+			sd = client_socket[i];
+
+			//if valid socket descriptor then add to read list
+			if (sd > 0)
+				FD_SET(sd, &readfds);
+
+			//highest file descriptor number, need it for the select function
+			if (sd > max_sd)
+				max_sd = sd;
 		}
+
+
+        //wait for an activity on one of the sockets , timeout is NULL , so wait indefinitely
+        activity = select( max_sd + 1 , &readfds , NULL , NULL , NULL);
+
+        if ((activity < 0) && (errno != EINTR)) {
+			printf("select error");
+		}
+
+        if (FD_ISSET(listenSd, &readfds)) {
+			if (( connSd = accept(listenSd, (struct sockaddr*) &their_addr, (socklen_t*) &sin_size)) < 0) {
+				perror("accept");
+				exit(EXIT_FAILURE);
+			}
+
+			//inform user of socket number - used in send and receive commands
+			printf(
+					"New connection , socket fd is %d , ip is : %s , port : %d \n",
+					connSd, inet_ntoa(address.sin_addr),
+					ntohs(address.sin_port));
+
+			//send new connection greeting message
+			puts("Welcome message sent successfully");
+
+
+			//add new socket to array of sockets
+			for (i = 0; i < NUM_OF_CLIENTS; i++) {
+				//if position is empty
+				if (client_socket[i] == 0) {
+					client_socket[i] = connSd;
+					printf("Adding to list of sockets as %d\n", i);
+					break;
+				}
+			}
+		}
+
+
 		write(connSd, HELLO_MSG, strlen(HELLO_MSG));
 
 		// autentication phase
