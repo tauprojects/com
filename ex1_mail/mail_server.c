@@ -73,12 +73,12 @@ typedef struct USER {
 //Safe Free Allocated Memory
 //Checks if object allocated before and print error with line number otherwise.
 void safeFree(void* object, int line) {
-//	printf("Trying to free object allocated memory in Line number: %d\n",line); //For debug mode
 	if (object)
 		free(object);
 	else
-		;
-//		printf("Unable or No_Need to free object allocated memory in Line number: %d\n",line);
+		printf(
+				"Unable or No_Need to free object allocated memory in Line number: %d\n",
+				line);
 }
 
 //function that create a User in USER pointer
@@ -248,7 +248,6 @@ int split_mail(char* msg, char * username, MAIL *mail) {
 	return 0;
 }
 
-
 //sub-functuon of compose - create an mail object in pointer from msg.
 int split_chat(char* msg, char * username, MAIL *mail) {
 	int cnt, total, i;
@@ -258,17 +257,19 @@ int split_chat(char* msg, char * username, MAIL *mail) {
 	if (!splitArgs)
 		return -1;
 	mail->isTrash = 0;
-	mail->totalTo = total;
+	mail->totalTo = 1;
 	memset(mail->from, '\0', MAX_USERNAME);
 	memset(mail->subject, '\0', MAX_SUBJECT);
 	memset(mail->text, '\0', MAX_CONTENT);
 	strncpy(mail->from, username, strlen(username));
-	strncpy(mail->subject,OFFLINE_MSG, strlen(&splitArgs[1][9]));
-	strncpy(mail->text, splitArgs[1], strlen(splitArgs[1]));
-	for (i = 0; i < total; i++) {
-		memset(mail->to[i], '\0', MAX_USERNAME);
-		strncpy(mail->to[i], to[i], strlen(to[i]));
-	}
+	strncpy(mail->subject, OFFLINE_MSG, strlen(OFFLINE_MSG));
+	strncpy(mail->text, "Text:", strlen("Text:"));
+	strncat(mail->text, splitArgs[1], strlen(splitArgs[1]));
+	memset(mail->to[0], '\0', MAX_USERNAME);
+	strncpy(mail->to[0], &splitArgs[0][4], strlen(&splitArgs[0][4]));
+
+	printf("\nIn compose_chat chat msg: %s\n");
+
 	freeSplit(cnt, splitArgs);
 	freeSplit(total, to);
 	return 0;
@@ -312,7 +313,7 @@ char* get_mail(MAIL *mail) {
 	if (mail->isTrash == 0) {
 		return build_mail(mail);
 	}
-	return "mail deleted";
+	return "mail deleted\n";
 }
 
 //sub function of compose. update in user struct the new mail
@@ -320,12 +321,10 @@ int update_users(USER* users, int num_users, MAIL *mail, int mail_id) {
 	int i, j;
 	for (i = 0; i < mail->totalTo; i++) {
 		for (j = 0; j < num_users; j++) {
-//			printf("to: %s    mail: %s\n",users[j].user, mail->to[i]);
 			if (strncmp(mail->to[i], users[j].user, strlen(mail->to[i])) == 0
 					&& strlen(mail->to[i]) == strlen(users[j].user)) {
 				users[j].mailIdInDB[users[j].mailAmount] = mail_id;
 				users[j].mailAmount++;
-//				printf("user: %s\nmail id:%d\n",users[j].user,users[j].mailAmount);
 			}
 		}
 	}
@@ -335,7 +334,6 @@ int update_users(USER* users, int num_users, MAIL *mail, int mail_id) {
 //compose mail function
 int compose_mail(char* msg, char* username, MAIL *mail, USER* users,
 		int NumberOfUsers, int* mailsInServer) {
-//	printf("in compose, this is the msg that was received from: %s\n%s\n",username,msg);
 	int indication;
 	if (!msg) {
 		return -1;
@@ -352,7 +350,6 @@ int compose_mail(char* msg, char* username, MAIL *mail, USER* users,
 //compose chat function
 int compose_chat(char* msg, char* username, MAIL *mail, USER* users,
 		int NumberOfUsers, int* mailsInServer) {
-//	printf("in compose, this is the msg that was received from: %s\n%s\n",username,msg);
 	int indication;
 	if (!msg) {
 		return -1;
@@ -367,8 +364,8 @@ int compose_chat(char* msg, char* username, MAIL *mail, USER* users,
 }
 
 char* parseChatMsg(char* msg) {
-	char* result = (char*)malloc(sizeof(char)*MAX_USERNAME);
-	if(!result){
+	char* result = (char*) malloc(sizeof(char) * MAX_USERNAME);
+	if (!result) {
 		return NULL;
 	}
 	int cnt;
@@ -380,27 +377,26 @@ char* parseChatMsg(char* msg) {
 	splitArgs = str_split(msg, ':', &cnt);
 	if (!splitArgs)
 		return NULL;
-	strncpy(result,&splitArgs[0][4],strlen(&splitArgs[0][4]));
+	strncpy(result, &splitArgs[0][4], strlen(&splitArgs[0][4]));
 	freeSplit(cnt, splitArgs);
 	return result;
 
 }
 
-
-char* createChatMessage(char* chatMsg,char* from){
-	char* result = (char*)calloc(sizeof(char),4500);
+char* createChatMessage(char* chatMsg, char* from) {
+	char* result = (char*) calloc(sizeof(char), 4500);
 	int cnt;
-	if(!result){
+	if (!result) {
 		return NULL;
 	}
-	strncat(result,CHAT_OPENNER,strlen(CHAT_OPENNER));
-	strncat(result,from,strlen(from));
-	strncat(result,": ",2);
+	strncat(result, CHAT_OPENNER, strlen(CHAT_OPENNER));
+	strncat(result, from, strlen(from));
+	strncat(result, ": ", 2);
 	char** splitArgs;
 	splitArgs = str_split(chatMsg, ':', &cnt);
 	if (!splitArgs)
-			return NULL;
-	strncat(result,&splitArgs[1][1],strlen(&splitArgs[1][1]));
+		return NULL;
+	strncat(result, &splitArgs[1][1], strlen(&splitArgs[1][1]));
 	freeSplit(cnt, splitArgs);
 	return result;
 }
@@ -420,16 +416,16 @@ void show_mailDB(MAIL* mails, int mailsInServer) {
 //Get ONline users String
 char* getOnlineUsers(USER* users, int client_socket[][2], int nuberOfUsers) {
 	char* result = (char*) calloc(sizeof(char),
-	NUM_OF_CLIENTS * (MAX_USERNAME + 1)+14);
-	if(!result){
+	NUM_OF_CLIENTS * (MAX_USERNAME + 1) + 14);
+	if (!result) {
 		return NULL;
 	}
-	strncat(result, ONLINE_U,strlen(ONLINE_U));
+	strncat(result, ONLINE_U, strlen(ONLINE_U));
 	int j, i, cnt = 0;
 	for (j = 0; j < nuberOfUsers; j++) {
 		for (i = 0; i < NUM_OF_CLIENTS; i++) {
-			if (strncmp(users[i].user, users[j].user, strlen(users[i].user)) == 0
-					&& strlen(users[i].user) == strlen(users[j].user)) {
+			if (strncmp(users[i].user, users[j].user, strlen(users[i].user))
+					== 0 && strlen(users[i].user) == strlen(users[j].user)) {
 				if ((client_socket[i][0] > 0) && (client_socket[i][1] > -1)) {
 					if (cnt != 0) {
 						strncat(result, ",", 1);
@@ -441,6 +437,7 @@ char* getOnlineUsers(USER* users, int client_socket[][2], int nuberOfUsers) {
 			}
 		}
 	}
+	strncat(result, "\n", strlen("\n"));
 	return result;
 }
 
@@ -451,19 +448,17 @@ int isConnected(char* username, int client_socket[][2], USER* users,
 		if (strncmp(users[i].user, username, strlen(users[i].user)) == 0
 				&& strlen(users[i].user) == strlen(username)) {
 			index = i;
-			*dstSd = client_socket[i][0];
-			printf("client_socket[i][0] : %d\n", client_socket[i][0]);
 			break;
 		}
 	}
 	for (i = 0; i < NUM_OF_CLIENTS; i++) {
 		if (client_socket[i][1] == index) {
+			*dstSd = client_socket[i][0];
 			return 1;
 		}
 	}
 	return 0;
 }
-
 
 //show inbox function
 //return allocated String - need to be free the return object
@@ -472,30 +467,28 @@ char* show_inbox(USER user, MAIL *mails) {
 	int total = MAX_USERNAME * (NUM_OF_CLIENTS + 1) + MAX_SUBJECT + MAX_CONTENT
 			+ 100;
 	char* result = (char*) calloc(sizeof(char), total * user.mailAmount);
+	char noMailMsg[40];
+	sprintf(noMailMsg, "No Mails To Show In Inbox\n");
+
 	if (!result) {
 		return NULL;
 	}
 
 	if (user.mailAmount == 0) {
-		strncat(result, "No Mails To Show In Inbox",
-				strlen("No Mails To Show In Inbox"));
+		return noMailMsg;
 
 	}
 	for (i = 0; i < user.mailAmount; i++) {
 		if (!mails[user.mailIdInDB[i]].isTrash) {
 			char mailInbox[total];
-//			printf("testing attributes: from: %s\nsubject: %s\n", mails[user.mailIdInDB[i]].from,mails[user.mailIdInDB[i]].subject);
 			sprintf(mailInbox, "%d %s %s\n", i, mails[user.mailIdInDB[i]].from,
 					mails[user.mailIdInDB[i]].subject);
-//			printf("\ntext to be concat %s\n", mailInbox);
 			strncat(result, mailInbox, strlen(mailInbox));
-//			printf("text from show_inbox phase: %d\n%s\n", i, result);
 		}
 	}
 	//Case where all User inbox mails are trashed
 	if (strlen(result) < 2) {
-		strncat(result, "No Mails To Show In Inbox",
-				strlen("No Mails To Show In Inbox"));
+		return noMailMsg;
 	}
 
 	return result;
@@ -505,6 +498,7 @@ char* show_inbox(USER user, MAIL *mails) {
 int getOpcode(char* client_message) {
 	char* temp = (char*) malloc(sizeof(char) * 5);
 	strncpy(temp, client_message, 1);
+	temp[1] = '\0';
 	int opCode = atoi(temp);
 	free(temp);
 	return opCode;
@@ -524,6 +518,9 @@ int main(int argc, char* argv[]) {
 	char client_message[4500];
 	char curr_username[MAX_USERNAME];
 	char** splitArgs;
+	char noMailMsg[100];
+	int opcode;
+	sprintf(noMailMsg, "The requested mail does not exist in DB\n");
 	if (argc == 2) {
 		filename = argv[1];
 		port = DEFAULT_PORT;
@@ -625,11 +622,6 @@ int main(int argc, char* argv[]) {
 				exit(EXIT_FAILURE);
 			}
 
-			//inform user of socket number - used in send and receive commands
-			printf(
-					"New connection , socket fd is %d , ip is : %s , port : %d \n",
-					connSd, inet_ntoa(myaddr.sin_addr), ntohs(myaddr.sin_port));
-
 			//send new connection greeting message
 			write(connSd, HELLO_MSG, strlen(HELLO_MSG));
 
@@ -638,7 +630,6 @@ int main(int argc, char* argv[]) {
 				//if position is empty
 				if (client_socket[i][0] == 0) {
 					client_socket[i][0] = connSd;
-					printf("Adding to list of sockets as %d\n", i);
 					break;
 				}
 			}
@@ -651,13 +642,19 @@ int main(int argc, char* argv[]) {
 			if (FD_ISSET(sd, &readfds)) {
 				if (client_socket[i][1] == -1) {
 					// autentication phase
-					//			printf("Ready For USER\n");
 					if (recv(sd, client_message, 4500, 0) < 0) {
 						printf("Failed to receive from server: %s\n",
 								strerror(errno));
 						exit(EXIT_FAILURE);
 					} else {
-						if (getOpcode(client_message) == 6) {
+						opcode = getOpcode(client_message);
+						if (opcode == 5) {
+							client_socket[i][0] = 0;
+							client_socket[i][1] = -1;
+							close(sd);
+							continue;
+						}
+						if (opcode == 6) {
 							close(sd);
 							close(listenSd);
 							safeFree(build, __LINE__); //unable to free in some cases - ITS OK!
@@ -666,6 +663,7 @@ int main(int argc, char* argv[]) {
 							safeFree(inboxUser, __LINE__); //unable to free in some cases - ITS OK!
 							return 0;
 						}
+
 						splitArgs = str_split(&client_message[5], '\t', &cnt);
 						if (splitArgs) {
 							memset(curr_username, '\0', MAX_USERNAME);
@@ -683,7 +681,6 @@ int main(int argc, char* argv[]) {
 							}
 						}
 					}
-					printf("client_ath %s : %d\n", curr_username,client_socket[i][0]);
 
 				} else {
 					user_id = client_socket[i][1];
@@ -695,7 +692,6 @@ int main(int argc, char* argv[]) {
 								strerror(errno));
 						exit(EXIT_FAILURE);
 					} else {
-						printf(" MSG : %s\n",client_message);
 						opCode = getOpcode(client_message);
 						//cases of function
 						switch (opCode) {
@@ -712,16 +708,10 @@ int main(int argc, char* argv[]) {
 									build = get_mail(&totalMails[id_in_db]);
 									write(sd, build, strlen(build));
 								} else {
-									write(sd,
-											"The requested mail does not exist in DB",
-											strlen(
-													"The requested mail does not exist in DB"));
+									write(sd, noMailMsg, strlen(noMailMsg));
 								}
 							} else {
-								write(sd,
-										"The requested mail does not exist in DB",
-										strlen(
-												"The requested mail does not exist in DB"));
+								write(sd, noMailMsg, strlen(noMailMsg));
 							}
 							break;
 						case DELETE_MAIL:
@@ -733,28 +723,29 @@ int main(int argc, char* argv[]) {
 							ack = compose_mail(&client_message[5],
 									curr_username, &totalMails[mailsInServer],
 									users, NumberOfUsers, &mailsInServer);
-							//					printf("ack: %d   mailinServer: %d\n",ack, mailsInServer);
 							break;
 						case MSG:
 							;
 							char* chatParnter;
 							char temp[4500];
 							int dstSd;
-							strncpy(temp,client_message,strlen(client_message));
+							strncpy(temp, client_message,
+									strlen(client_message));
 							chatParnter = parseChatMsg(&temp[5]);
-							if(chatParnter==NULL){
+							if (chatParnter == NULL) {
 								break;
 							}
-							ack = isConnected(chatParnter,client_socket,users,NumberOfUsers,&dstSd);
-							if(ack==0){
+							ack = isConnected(chatParnter, client_socket, users,
+									NumberOfUsers, &dstSd);
+							if (ack == 0) {
 								int rc = compose_chat(&client_message[5],
-										curr_username, &totalMails[mailsInServer],
-										users, NumberOfUsers, &mailsInServer);
-							}
-							else if(ack==1){
-								chatMessage = createChatMessage(&client_message[5],curr_username);
-								int ind = write(dstSd, chatMessage, strlen(chatMessage));
-								printf("write %d bytes\n", ind);
+										curr_username,
+										&totalMails[mailsInServer], users,
+										NumberOfUsers, &mailsInServer);
+							} else if (ack == 1) {
+								chatMessage = createChatMessage(
+										&client_message[5], curr_username);
+								write(dstSd, chatMessage, strlen(chatMessage));
 								safeFree(chatMessage, __LINE__);
 							}
 							break;

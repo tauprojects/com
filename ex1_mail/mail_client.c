@@ -111,13 +111,15 @@ void check_quit(char* msg) {
 	}
 }
 
-void recv_data(char* msg) {
+int recv_data(char* msg) {
+	int result;
 	memset(msg, 0, strlen(msg));
-	if (recv(sock, msg, HOST_REPLY, 0) < 0) {
+	if ((result = recv(sock, msg, HOST_REPLY, 0)) < 0) {
 		printf("Failed to receive from server: %s\n", strerror(errno));
 		exit(EXIT_FAILURE);
 		close(sock);
 	}
+	return result;
 }
 
 int enter_test_auth(char* message, char* user, char* password, char** splitArgs,
@@ -152,7 +154,6 @@ int compose_to_server(char* message, char* temp, char** splitArgs,
 					&& splitArgs[1]) {
 				to_flag = 1;
 				strcpy(send_list, temp);
-				//						strcpy(send_list,splitArgs[1]);
 			} else {
 				printf("%s\n", TO_ERR);
 			}
@@ -176,9 +177,7 @@ int compose_to_server(char* message, char* temp, char** splitArgs,
 	}
 	size = strlen(send_list) + strlen(subject) + strlen(text);
 	sprintf(comp_txt, "4%s%s%s%s", msgSize, send_list, subject, text);
-//				puts(comp_txt);
 	send_data(comp_txt);
-//	recv_data(server_reply);
 	return 0;
 }
 
@@ -192,7 +191,6 @@ int compose_to_server_test(char* message, char* temp, char** splitArgs,
 	size = strlen(send_list) + strlen(subject) + strlen(text);
 	sprintf(comp_txt, "4%s%s%s%s", msgSize, send_list, subject, text);
 	send_data(comp_txt);
-//	recv_data(server_reply);
 	return 0;
 }
 
@@ -243,46 +241,34 @@ int enter_auth(char* message, char* user, char* password, char** splitArgs,
 void get_cmd_and_execute(char *message, char *temp, char ** splitArgs,
 		char* server_reply, char *send_list, char *subject, char *text,
 		char* comp_txt, char* msgSize) {
-	//while (1) {
-		fgets(message, TOTAL_MSG, stdin);
-		strcpy(temp, message);
-		check_quit(message);
-		splitArgs = str_split(message, ' ');
-		int size;
-		if (strncmp(splitArgs[0], SHOW, strlen(SHOW)) == 0) {
-			send_data("1");
-			recv_data(server_reply);
-			printf("%s\n", server_reply);
-		} else if (strncmp(splitArgs[0], GET, strlen(GET)) == 0
-				&& splitArgs[1]) {
-			size = 1 + strlen(splitArgs[1]);
-			size = inttostr(size, msgSize);
-			sprintf(temp, "2%s%s", msgSize, splitArgs[1]);
-			send_data(temp);
-			recv_data(server_reply);
-			printf("%s\n", server_reply);
-		} else if (strncmp(splitArgs[0], DEL, strlen(DEL)) == 0
-				&& splitArgs[1]) {
-			size = 1 + strlen(splitArgs[1]);
-			size = inttostr(size, msgSize);
-			sprintf(temp, "3%s%s", msgSize, splitArgs[1]);
-			send_data(temp);
-		} else if (strncmp(splitArgs[0], SHOW_ONLINE, strlen(SHOW_ONLINE))
-				== 0) {
-			send_data("8");
-			recv_data(server_reply);
-			printf("%s\n", server_reply);
-		} else if (strncmp(splitArgs[0], COMP, strlen(COMP)) == 0) {
-			compose_to_server(message, temp, splitArgs, send_list, subject,
-					text, size, comp_txt, msgSize, server_reply);
-//			compose_to_server_test(message, temp, splitArgs, send_list, subject, text, size, comp_txt, msgSize, server_reply); //For Debug Mode
-		} else if (strncmp(splitArgs[0], MSG, strlen(MSG)) == 0) {
-			sprintf(comp_txt, "7%s%s", msgSize, temp);
-			send_data(comp_txt);
-		} else {
-			printf(WRNG_CMD);
-		}
-	//}
+	fgets(message, TOTAL_MSG, stdin);
+	strcpy(temp, message);
+	check_quit(message);
+	splitArgs = str_split(message, ' ');
+	int size;
+	if (strncmp(splitArgs[0], SHOW, strlen(SHOW)) == 0) {
+		send_data("1");
+	} else if (strncmp(splitArgs[0], GET, strlen(GET)) == 0 && splitArgs[1]) {
+		size = 1 + strlen(splitArgs[1]);
+		size = inttostr(size, msgSize);
+		sprintf(temp, "2%s%s", msgSize, splitArgs[1]);
+		send_data(temp);
+	} else if (strncmp(splitArgs[0], DEL, strlen(DEL)) == 0 && splitArgs[1]) {
+		size = 1 + strlen(splitArgs[1]);
+		size = inttostr(size, msgSize);
+		sprintf(temp, "3%s%s", msgSize, splitArgs[1]);
+		send_data(temp);
+	} else if (strncmp(splitArgs[0], SHOW_ONLINE, strlen(SHOW_ONLINE)) == 0) {
+		send_data("8");
+	} else if (strncmp(splitArgs[0], COMP, strlen(COMP)) == 0) {
+		compose_to_server(message, temp, splitArgs, send_list, subject, text,
+				size, comp_txt, msgSize, server_reply);
+	} else if (strncmp(splitArgs[0], MSG, strlen(MSG)) == 0) {
+		sprintf(comp_txt, "7%s%s", msgSize, temp);
+		send_data(comp_txt);
+	} else {
+		printf(WRNG_CMD);
+	}
 	free(splitArgs);
 }
 
@@ -299,7 +285,7 @@ int main(int argc, char* argv[]) {
 			* AUTH_LEN], subject[SUBJECT], text[2010], comp_txt[TOT_TEXT];
 	char message[TOTAL_MSG], server_reply[HOST_REPLY], temp[TOTAL_MSG];
 	char** splitArgs;
-	int port, max_sd, con_est = 0;
+	int port, max_sd;
 	struct sockaddr_in server;
 	fd_set readfds, writefds;
 
@@ -316,7 +302,6 @@ int main(int argc, char* argv[]) {
 	} else {
 		return -1; //exit(1)
 	}
-
 
 	// Create socket
 	sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -341,46 +326,38 @@ int main(int argc, char* argv[]) {
 
 	// entering user
 	int flag = 0;
+	while (flag == 0) {
+		flag = enter_auth(message, user, password, splitArgs, auth,
+				server_reply, msgSize);
+	}
 	while (1) {
-
 		//clear the socket set
 		FD_ZERO(&readfds);
 		FD_ZERO(&writefds);
 		//add master socket to set
-		FD_SET(sock, &readfds);
 		FD_SET(sock, &writefds);
-		FD_SET(STDIN_FILENO, &readfds);
 		FD_SET(STDIN_FILENO, &writefds);
 		max_sd = sock;
 		//wait for an activity on one of the sockets , timeout is NULL , so wait indefinitely
-		int activity = select(max_sd + 1, &readfds, &writefds, NULL, NULL);
+		int activity = select(max_sd + 1, &writefds, NULL, NULL, NULL);
 
 		if ((activity < 0) && (errno != EINTR)) {
 			printf("select error");
 		}
-		while (flag == 0) {
-			flag = enter_auth(message, user, password, splitArgs, auth,
-					server_reply, msgSize);
-		}
 
-		if (FD_ISSET(sock, &readfds)) {
-
-			printf("in readfds\n");
+		if (FD_ISSET(STDIN_FILENO, &writefds)) {
 			get_cmd_and_execute(message, temp, splitArgs, server_reply,
 					send_list, subject, text, comp_txt, msgSize);
-//			recv_data(server_reply);
-//			printf("%s", server_reply);
 		}
 		if (FD_ISSET(sock, &writefds)) {
+			int bytesRecieved;
 			// cmds to mail server
-			printf("in writefds\n");
-			recv_data(server_reply);
+			bytesRecieved = recv_data(server_reply);
+			server_reply[bytesRecieved] = '\0';
 			printf("%s", server_reply);
-//			get_cmd_and_execute(message, temp, splitArgs, server_reply,
-//					send_list, subject, text, comp_txt, msgSize);
+
 		}
 	}
-
 	close(sock);
 	return 0;
 }
